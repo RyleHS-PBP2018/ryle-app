@@ -1,6 +1,21 @@
 /* Template Style Sheet */
 /* This is just an example, we can edit these however we want*/
 
+@font-face {
+	font-family: 'Athletic';
+	src: url('Fonts/AthleticTitle.ttf');
+}
+
+@font-face {
+	font-family: 'StarJedi';
+	src: url('Fonts/Starjedi.ttf');
+}
+
+.bordered-div {
+	box-sizing: border-box;
+	border: 1px solid black;
+}
+
 .header {
 	box-sizing: border-box;
 	height: 50px;
