@@ -2,13 +2,8 @@
 /* This is just an example, we can edit these however we want*/
 
 @font-face {
-	font-family: 'Athletic';
-	src: url('Fonts/AthleticTitle.ttf');
-}
-
-@font-face {
-	font-family: 'StarJedi';
-	src: url('Fonts/Starjedi.ttf');
+	font-family: Athletic;
+	src: url(Fonts/AthleticTitle.ttf);
 }
 
 .bordered-div {
