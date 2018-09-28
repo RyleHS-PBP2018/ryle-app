@@ -1,14 +1,18 @@
-/* Template Style Sheet */
-/* This is just an example, we can edit these however we want*/
+
 
 @font-face {
 	font-family: Athletic;
 	src: url(Fonts/AthleticTitle.ttf);
 }
 
+@font-face {
+	font-family: Asimov;
+	src: url(Fonts/Asimov.otf);
+}
+
 .bordered-div {
 	box-sizing: border-box;
-	border: 1px solid black;
+	
 }
 
 .header {
@@ -20,35 +24,15 @@
 	float: left;
 }
 		
-.column {
-	box-sizing: border-box;
-	width: 25%;
-	padding: 15px;
-	float: left;
-}
 		
 .sidebar {
-	float: left;
 	box-sizing: border-box;
-	border-right: 1px solid #b2b2b2;
-	padding: 20px 0px;
-	margin-top: 40px;
+	width: 80%;
+	margin: 10px 0px;
+	font-family: Asimov;
+	text-align: left;
 }
 		
-.sidebar a {
-	cursor: pointer;
-	box-sizing: border-box;
-	margin: 40px 0px;
-	padding: 15px 33px;
-	text-decoration: none;
-	font-family:helvetica;
-	line-height: 250%;
-}
-		
-.sidebar a:hover {
-	background-color: #FF8000;
-}
-
 		
 .button {
 	cursor: pointer;
