@@ -31,6 +31,13 @@
 	margin: 10px 0px;
 	font-family: Asimov;
 	text-align: left;
+	border: 1px solid black;
+	border-left: none;
+	border-right: none;
+}
+
+.sidebar p {
+	line-height: 30%
 }
 		
 		
