@@ -1,0 +1,1 @@
+This folder is for group resources to coordinate standards, color schemes, training modules, and code examples.
