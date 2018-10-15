@@ -28,13 +28,13 @@
 .sidebar {
 	box-sizing: border-box;
 	width: 80%;
+	background-color: #f07800;
 	margin: 10px 0px;
 	font-family: Asimov;
 	text-align: left;
 	vertical-align: center; 
 	border: 1px solid black;
-	border-left: none;
-	border-right: none;
+	border-radius: 10px;
 }
 
 .sidebar p {
