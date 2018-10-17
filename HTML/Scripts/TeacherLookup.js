@@ -1,8 +1,6 @@
 
 
-function GetInfoByRN(data){
-
-	
+function GetInfoByRN(data){	
 	
 	document.getElementById("ToRoomRNumber").innerHTML = data[0]["Last Names"];
 	document.getElementById("ToRoomTeacher").innerHTML = "Paragraph changed.";
