@@ -1,0 +1,15 @@
+Windows IIS (Internet Information Services/Server) is a program that allows you to host your own local server
+in order to test server-side web scripts. You won't be able to install or use the IIS systems on the school computers,
+but you can set it up on Windows laptops and your personal desktops. Here are some guides to help you out.
+
+|tl;dr: Windows IIS is a program that allows server-side scripts to be run/tested. You can't install it at school.
+
+
+||Enable Windows IIS (5-10 minutes):
+	https://www.betterhostreview.com/turn-on-iis-windows-10.html
+I personally installed the FTP Service, IIS Management Console, IIS Management Scripts and Tools, all default Common HTTP Features,
+HTTP Logging, Static Content Compression, and Request Filtering. You can install additional features any time, so it's not a big deal.
+
+||The Very Basics of IIS (10-15 minutes probably):
+	https://blog.udemy.com/learn-iis/
+Allows you to set a default document and start testing scripts

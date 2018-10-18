@@ -1,15 +1,31 @@
 
-var arrItems = []; //The array that will store the json values
-
-$.getJSON("ExtensionGrid.json", function (data) { 
+/*
+function GetJson(filepath) {
+$.ajax(filepath , function (data) { 
+	var arrTemp = [];
 	$.each(data, function (index, value) 
-		{ arrItems.push(value); })
+		{ arrTemp.push(value); })
+	return arrTemp;
 });
+}
+*/
 
 
-function GetInfoByRN(){	
-	
-	document.getElementById("ToRoomRNumber").innerHTML = arrItems[0]["Last Names"];
+function readTextFile(file, callback) {
+    var rawFile = new XMLHttpRequest();
+    rawFile.overrideMimeType("application/json");
+    rawFile.open("GET", file, true);
+    rawFile.onreadystatechange = function() {
+        if (rawFile.readyState === 4 && rawFile.status == "200") {
+            callback(rawFile.responseText);
+        }
+    }
+    rawFile.send(null);
+}
+
+
+function GetInfoByRN(arr){
+	document.getElementById("ToRoomRNumber").innerHTML = arr[0]["Last Names"];
 	document.getElementById("ToRoomTeacher").innerHTML = "Paragraph changed.";
 	document.getElementById("ToRoomWebsite").innerHTML = "Paragraph changed.";
 	document.getElementById("ToRoomEmail").innerHTML = "Paragraph changed.";
