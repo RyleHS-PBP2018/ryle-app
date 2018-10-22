@@ -1,15 +1,4 @@
 
-/*
-function GetJson(filepath) {
-$.ajax(filepath , function (data) { 
-	var arrTemp = [];
-	$.each(data, function (index, value) 
-		{ arrTemp.push(value); })
-	return arrTemp;
-});
-}
-*/
-
 
 function readTextFile(file, callback) {
     var rawFile = new XMLHttpRequest();
@@ -25,7 +14,7 @@ function readTextFile(file, callback) {
 
 
 function GetInfoByRN(arr){
-	document.getElementById("ToRoomRNumber").innerHTML = arr[0]["Last Names"];
+	//document.getElementById("ToRoomRNumber").innerHTML = arr[0]["Last Names"];
 	document.getElementById("ToRoomTeacher").innerHTML = "Paragraph changed.";
 	document.getElementById("ToRoomWebsite").innerHTML = "Paragraph changed.";
 	document.getElementById("ToRoomEmail").innerHTML = "Paragraph changed.";
