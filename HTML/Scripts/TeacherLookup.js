@@ -13,14 +13,16 @@ function readTextFile(file, callback) {
 }
 
 
-function GetInfoByRN(FromTo){
+function GetInfoByRN(FromTo){ //TODO Handle room numbers that have letters in them, and add band, gym, and library compatibility.
 	let e = document.getElementById("ClassPeriod");
 	let period = e.options[e.selectedIndex].value;
 	let roomnumber = parseInt(document.getElementById(FromTo + "RoomNumber").value);
 	let index = GetRoomIndex(roomnumber, period, FromTo);
 	
 	if (index["errmsg"] != null) {
+		console.log(FromTo + " errmsg is not null")
 		document.getElementById(FromTo + "ErrorLogContent").innerHTML = index["errmsg"];
+		document.getElementById(FromTo + "ErrorLogContent").style.display = "block";
 	}
 	else { 
 		document.getElementById(FromTo + "ErrorLogContent").style.display = "none";
@@ -76,7 +78,12 @@ function CheckErrorBoxes() {
 	if ( document.getElementById("ToErrorLogContent").style.display == "none" && document.getElementById("FromErrorLogContent").style.display == "none") {
 		document.getElementById("UserErrorLog").style.display = "none";
 	}
-	else { document.getElementById("UserErrorLog").style.display = "block" }
+	else { document.getElementById("UserErrorLog").style.display = "block"; }
+	
+	if ( document.getElementById("ToErrorLogContent").style.display != "none" && document.getElementById("FromErrorLogContent").style.display != "none") {
+		document.getElementById("ErrorBreak").style.display = "block";
+	}
+	else { document.getElementById("ErrorBreak").style.display = "none"; }
 }
 
 
@@ -84,11 +91,9 @@ function CheckErrorBoxes() {
 
 var database = {
     data:undefined,
-	logData : function() { console.log(this.data); }
 }
 
 readTextFile("Scripts/ExtensionGrid.json", function(text){
 	var data = JSON.parse(text);
 	database["data"] = data;
-	console.log(database.data);
 }); 
