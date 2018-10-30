@@ -24,15 +24,15 @@
 				<!-- Utilities selection bar -->
 				<div id="UtilitySelectionBar" align="left">
 				
-					<p style="border-bottom: none;">Directions</p>
+					<p id="DirectionsButton" onclick="SwitchTab('Directions')" style="border-bottom: none;">Directions</p>
 					
-					<p>Teacher</p>
+					<p id="TeacherButton" onclick="SwitchTab('Teacher')">Teacher</p>
 					
-					<p>Room</p>
+					<p id="RoomButton" onclick="SwitchTab('Room')">Room</p>
 				</div>
 				
 				<!-- Sub-Tab for the Directions utility -->
-				<div id="DirectionsTab">
+				<div id="DirectionsLookupTab" class="SelectionTab">
 					<!-- This is the Directions Input Form div -->
 					<div class="sidebar" style="padding: 5px; text-align: left;">
 						<form>
@@ -80,14 +80,21 @@
 				</div>
 				
 				<!-- Teacher Lookup div should go here -->
+				<div id="TeacherLookupTab" class="SelectionTab">
+				
+				</div>
 				
 				<!-- Room Lookup div here -->
+				<div id="RoomLookupTab" class="SelectionTab">
+				
+				</div>
 				
 				<!-- This div displays error messages for the user -->
 				<div id ="UserErrorLog" class="sidebar" style="display: none; padding: 5px;">
 					<span id="FromErrorLogContent"></span><hr id="ErrorBreak"/>
 					<span id="ToErrorLogContent"></span>
 				</div>
+			
 			</div>
 			
 			<!-- Map Display Main div -->

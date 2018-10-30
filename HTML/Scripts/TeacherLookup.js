@@ -20,7 +20,6 @@ function GetInfoByRN(FromTo){ //TODO Handle room numbers that have letters in th
 	let index = GetRoomIndex(roomnumber, period, FromTo);
 	
 	if (index["errmsg"] != null) {
-		console.log(FromTo + " errmsg is not null")
 		document.getElementById(FromTo + "ErrorLogContent").innerHTML = index["errmsg"];
 		document.getElementById(FromTo + "ErrorLogContent").style.display = "block";
 	}
@@ -86,6 +85,31 @@ function CheckErrorBoxes() {
 	else { document.getElementById("ErrorBreak").style.display = "none"; }
 }
 
+
+function SwitchTab(ElementID) {
+	//If element specified is not already visible
+	if (document.getElementById(ElementID + "LookupTab").style.display != "block") {
+		
+		//Hide all elements based on a class
+		tabs = document.getElementsByClassName("SelectionTab");
+		for (i = 0; i < tabs.length; i++) {
+			tabs[i].style.display = "none";
+		}
+		
+		//Show specified element
+		document.getElementById(ElementID + "LookupTab").style.display = "block";
+		
+		//Show all button borders
+		document.getElementById("DirectionsButton").style.borderBottom = "1px solid black";
+		document.getElementById("TeacherButton").style.borderBottom = "1px solid black";
+		document.getElementById("RoomButton").style.borderBottom = "1px solid black";
+		
+		//Hide selected border
+		document.getElementById(ElementID + "Button").style.borderBottom = "none";
+		return true;
+		
+	} else { return false; }
+}
 
 // --------------- Seperation Between function definitions and actual scripts ----------------
 
