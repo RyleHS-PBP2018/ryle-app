@@ -31,7 +31,7 @@
 					<p id="RoomButton" onclick="SwitchTab('Room')">Room</p>
 				</div>
 				
-				<!-- Sub-Tab for the Directions utility -->
+				<!-- Tab for the Directions utility -->
 				<div id="DirectionsLookupTab" class="SelectionTab">
 					<!-- This is the Directions Input Form div -->
 					<div class="sidebar" style="padding: 5px; text-align: left;">
@@ -77,23 +77,38 @@
 						<p id="ToRoomRNumber">Room 101</p>
 						<p id="ToRoomTeacher">Mrs.Stropko</p>
 					</div>
+				
+					<!-- This div displays error messages for the user -->
+					<div id ="UserErrorLog" class="sidebar" style="display: none; padding: 5px;">
+						<span id="FromErrorLogContent"></span><hr id="ErrorBreak"/>
+						<span id="ToErrorLogContent"></span>
+					</div>
 				</div>
 				
-				<!-- Teacher Lookup div should go here -->
-				<div id="TeacherLookupTab" class="SelectionTab">
+				<!-- Tab for the Teacher Lookup Utility -->
+				<div id="TeacherLookupTab" class="SelectionTab" style="display: none;">
+					<div class="sidebar" style="padding: 10px 5px; text-align: left;">
+						<form>
+							Teacher Name:
+							<div class="autocomplete" style="width: 177px;">
+								<input id="TeacherNameInput" type="text" size="25" placeholder="Last Name, First Name"/>
+							</div>
+							<button type="button" onclick="GetInfoByTeacher();">Submit</button>
+						</form>
+						
+						<div id="TeacherRoomInfo">
+						
+						</div>
+					</div>
+				</div>
+				
+				<!-- Tab for the Room Lookup Utility -->
+				<div id="RoomLookupTab" class="SelectionTab" style="display: none;">
 				
 				</div>
 				
-				<!-- Room Lookup div here -->
-				<div id="RoomLookupTab" class="SelectionTab">
 				
-				</div>
 				
-				<!-- This div displays error messages for the user -->
-				<div id ="UserErrorLog" class="sidebar" style="display: none; padding: 5px;">
-					<span id="FromErrorLogContent"></span><hr id="ErrorBreak"/>
-					<span id="ToErrorLogContent"></span>
-				</div>
 			
 			</div>
 			
