@@ -38,11 +38,11 @@
 						<form>
 						
 							From Room:
-							<input id="FromRoomNumber" type="text" size="10" maxlength="4" placeholder="101"/>
+							<input id="FromRoomNumber" type="text" size="10" maxlength="4" placeholder="101" value="" autocomplete="off"/>
 							<br/>
 							
 							To Room:
-							<input id="ToRoomNumber" type="text" size="10" maxlength="4" placeholder="102"/>
+							<input id="ToRoomNumber" type="text" size="10" maxlength="4" placeholder="102" value="" autocomplete="off"/>
 							<img src="Images/TooltipQuestionMark.png" height="20" width="20" style="vertical-align: text-bottom;"
 							title="Room numbers such as Room 116-A should be entered as 116a or 116A"/>
 							<br/>
@@ -59,7 +59,7 @@
 							
 							<br/>
 							
-							<button type="button" onclick="GetInfoByRN('To'); GetInfoByRN('From'); CheckErrorBoxes();">Submit</button>
+							<button type="button" onclick="DisplayInfoByRN('To'); DisplayInfoByRN('From'); CheckErrorBoxes();">Submit</button>
 							
 						</form>
 					</div>
@@ -83,6 +83,7 @@
 						<span id="FromErrorLogContent"></span><hr id="ErrorBreak"/>
 						<span id="ToErrorLogContent"></span>
 					</div>
+					
 				</div>
 				
 				<!-- Tab for the Teacher Lookup Utility -->
@@ -91,14 +92,21 @@
 						<form>
 							Teacher Name:
 							<div class="autocomplete" style="width: 177px;">
-								<input id="TeacherNameInput" type="text" size="25" placeholder="Last Name, First Name"/>
+								<input id="TeacherNameInput" type="text" size="25" placeholder="Last Name, First Name" value="" autocomplete="off"/>
 							</div>
-							<button type="button" onclick="GetInfoByTeacher();">Submit</button>
+							<button type="button" onclick="DisplayInfoByTeacher();">Submit</button>
 						</form>
-						
-						<div id="TeacherRoomInfo">
-						
-						</div>
+					</div>
+					
+					<div id="TeacherLookupDisplay" class="sidebar" style="padding: 10px 5px;">
+						<p id="TLDisplayName"></p>
+						<p id="TLPeriod1">1st:</p>
+						<p id="TLPeriod2">2nd:</p>
+						<p id="TLPeriod3">3rd:</p>
+						<p id="TLPeriodRAP">RAP:</p>
+						<p id="TLPeriod4">4th:</p>
+						<p id="TLPeriod5">5th:</p>
+						<p id="TLPeriod6">6th:</p>
 					</div>
 				</div>
 				
@@ -106,10 +114,6 @@
 				<div id="RoomLookupTab" class="SelectionTab" style="display: none;">
 				
 				</div>
-				
-				
-				
-			
 			</div>
 			
 			<!-- Map Display Main div -->

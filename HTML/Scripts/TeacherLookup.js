@@ -13,7 +13,7 @@ function readTextFile(file, callback) {
 }
 
 
-function GetInfoByRN(FromTo){ //TODO Handle room numbers that have letters in them, and add band, gym, and library compatibility.
+function DisplayInfoByRN(FromTo){ //TODO Handle room numbers that have letters in them, and add band, gym, and library compatibility.
 	let e = document.getElementById("ClassPeriod");
 	let period = e.options[e.selectedIndex].value;
 	let roomnumber = parseInt(document.getElementById(FromTo + "RoomNumber").value);
@@ -31,8 +31,36 @@ function GetInfoByRN(FromTo){ //TODO Handle room numbers that have letters in th
 }
 
 
-function GetInfoByTeacher() {
-   
+function DisplayInfoByTeacher() {
+	let namestring = document.getElementById("TeacherNameInput").value;
+	namestring = namestring.split(", "); // ["Last Name", "First Name]
+	let iterator = 0;
+	while (iterator < database.data.length - 1) {
+		//If the specified teacher object is found
+		if (database.data[iterator]["Last Names"] == namestring[0] && database.data[iterator]["First Names"] == namestring[1]) {
+			//Display teacher name
+			document.getElementById("TLDisplayName").innerHTML = document.getElementById("TeacherNameInput").value;
+			
+			//Display room info
+			document.getElementById("TLPeriod1").innerHTML = "1st: " + GetValidRoomInfo(iterator, "1st");
+			document.getElementById("TLPeriod2").innerHTML = "2nd: " + GetValidRoomInfo(iterator, "2nd");
+			document.getElementById("TLPeriod3").innerHTML = "3rd: " + GetValidRoomInfo(iterator, "3rd");
+			document.getElementById("TLPeriodRAP").innerHTML = "RAP: " + GetValidRoomInfo(iterator, "RAP");
+			document.getElementById("TLPeriod4").innerHTML = "4th: " + GetValidRoomInfo(iterator, "4th");
+			document.getElementById("TLPeriod5").innerHTML = "5th: " + GetValidRoomInfo(iterator, "5th");
+			document.getElementById("TLPeriod6").innerHTML = "6th: " + GetValidRoomInfo(iterator, "6th");
+			return true;
+		}
+		iterator++;
+	}
+	return false;
+}
+
+
+function GetValidRoomInfo(iterator, period) {
+	if (database.data[iterator][period] != undefined) {
+		return database.data[iterator][period];
+	} else return "N/A";
 }
 
 
@@ -57,7 +85,7 @@ function GetRoomIndex(roomnumber, period, FromTo) {
 		DBRoomNumber = DBRoomNumber.replace(/\D/g,''); //Remove the wing letter(s) from the resultant database value
 		
 		if (DBRoomNumber == roomnumber) {
-			console.log("GetInfoByRN: Room Data located!");
+			console.log("DisplayInfoByRN: Room Data located!");
 			break;
 		}
 		else if (iterator == database.data.length - 2) { //Catches invalid room numbers (late catch for characters, NaN values, and decimals)
@@ -90,11 +118,12 @@ function SwitchTab(ElementID) { //TODO Hide ErrorLog and reset its content when 
 	//If element specified is not already visible
 	if (document.getElementById(ElementID + "LookupTab").style.display != "block") {
 		
-		//Hide all elements based on a class
+		//Hide all elements based on a class, and the error log
 		tabs = document.getElementsByClassName("SelectionTab");
 		for (i = 0; i < tabs.length; i++) {
 			tabs[i].style.display = "none";
 		}
+		document.getElementById("UserErrorLog").style.display = "none";
 		
 		//Show specified element
 		document.getElementById(ElementID + "LookupTab").style.display = "block";
