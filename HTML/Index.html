@@ -59,7 +59,7 @@
 							
 							<br/>
 							
-							<button type="button" onclick="DisplayInfoByRN('To'); DisplayInfoByRN('From'); CheckErrorBoxes();">Submit</button>
+							<button type="button" onclick="DisplayInfoByRN('To'); DisplayInfoByRN('From'); CheckErrorBoxes('Directions');">Submit</button>
 							
 						</form>
 					</div>
@@ -88,17 +88,17 @@
 				
 				<!-- Tab for the Teacher Lookup Utility -->
 				<div id="TeacherLookupTab" class="SelectionTab" style="display: none;">
-					<div class="sidebar" style="padding: 10px 5px; text-align: left;">
+					<div class="sidebar" style="text-align: left;">
 						<form>
 							Teacher Name:
 							<div class="autocomplete" style="width: 177px;">
-								<input id="TeacherNameInput" type="text" size="25" placeholder="Last Name, First Name" value="" autocomplete="off"/>
+								<input id="TeacherLookupInput" type="text" size="25" placeholder="Last Name, First Name" value="" autocomplete="off"/>
 							</div>
 							<button type="button" onclick="DisplayInfoByTeacher();">Submit</button>
 						</form>
 					</div>
 					
-					<div id="TeacherLookupDisplay" class="sidebar" style="padding: 10px 5px;">
+					<div id="TeacherLookupDisplay" class="sidebar" style="padding: 10px 5px; display: none;">
 						<p id="TLDisplayName"></p>
 						<p id="TLPeriod1">1st:</p>
 						<p id="TLPeriod2">2nd:</p>
@@ -112,7 +112,12 @@
 				
 				<!-- Tab for the Room Lookup Utility -->
 				<div id="RoomLookupTab" class="SelectionTab" style="display: none;">
-				
+					<div id="RoomLookupFormDiv" class="sidebar">
+						<form>
+							Room Number:
+							<input id="RoomLookupInput" type="text" size="5" value="" autocomplete="off"/>
+						</form>
+					</div>
 				</div>
 			</div>
 			

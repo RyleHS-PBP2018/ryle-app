@@ -85,6 +85,7 @@
 	font-family: Asimov;
 	border: 1px solid black;
 	border-radius: 10px;
+	padding: 10px 5px;
 }
 
 .sidebar p {

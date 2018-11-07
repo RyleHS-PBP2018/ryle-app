@@ -32,14 +32,20 @@ function DisplayInfoByRN(FromTo){ //TODO Handle room numbers that have letters i
 
 
 function DisplayInfoByTeacher() {
-	let namestring = document.getElementById("TeacherNameInput").value;
-	namestring = namestring.split(", "); // ["Last Name", "First Name]
+	let namestring = document.getElementById("TeacherLookupInput").value;
+	namestring = namestring.split(", "); // ["Last Name", "First Name"]
 	let iterator = 0;
 	while (iterator < database.data.length - 1) {
-		//If the specified teacher object is found
+		
 		if (database.data[iterator]["Last Names"] == namestring[0] && database.data[iterator]["First Names"] == namestring[1]) {
+			//If the specified teacher object is found
+			//Make sure display div is visible
+			if (document.getElementById("TeacherLookupDisplay").style.display == "none") {
+				document.getElementById("TeacherLookupDisplay").style.display = "block";
+			}
+			
 			//Display teacher name
-			document.getElementById("TLDisplayName").innerHTML = document.getElementById("TeacherNameInput").value;
+			document.getElementById("TLDisplayName").innerHTML = document.getElementById("TeacherLookupInput").value;
 			
 			//Display room info
 			document.getElementById("TLPeriod1").innerHTML = "1st: " + GetValidRoomInfo(iterator, "1st");
@@ -73,8 +79,8 @@ function GetRoomIndex(roomnumber, period, FromTo) {
 		console.log(FromTo + " room number is NaN");
 		errmsg =("Please enter a \"" + FromTo + "\" room number.");
 		return {
-			iterator,
-			errmsg,
+			"iterator":iterator,
+			"errmsg":errmsg,
 		};
 	}
 	
@@ -95,22 +101,24 @@ function GetRoomIndex(roomnumber, period, FromTo) {
 		else { iterator++; }
 	}
 	return {
-		iterator,
-		errmsg,
+		"iterator":iterator,
+		"errmsg":errmsg,
 	};
 }
 
 
-function CheckErrorBoxes() {
-	if ( document.getElementById("ToErrorLogContent").style.display == "none" && document.getElementById("FromErrorLogContent").style.display == "none") {
-		document.getElementById("UserErrorLog").style.display = "none";
+function CheckErrorBoxes(type) {
+	if (type == "Directions") {
+		if ( document.getElementById("ToErrorLogContent").style.display == "none" && document.getElementById("FromErrorLogContent").style.display == "none") {
+			document.getElementById("UserErrorLog").style.display = "none";
+		}
+		else { document.getElementById("UserErrorLog").style.display = "block"; }
+		
+		if ( document.getElementById("ToErrorLogContent").style.display != "none" && document.getElementById("FromErrorLogContent").style.display != "none") {
+			document.getElementById("ErrorBreak").style.display = "block";
+		}
+		else { document.getElementById("ErrorBreak").style.display = "none"; }
 	}
-	else { document.getElementById("UserErrorLog").style.display = "block"; }
-	
-	if ( document.getElementById("ToErrorLogContent").style.display != "none" && document.getElementById("FromErrorLogContent").style.display != "none") {
-		document.getElementById("ErrorBreak").style.display = "block";
-	}
-	else { document.getElementById("ErrorBreak").style.display = "none"; }
 }
 
 
@@ -256,5 +264,5 @@ readTextFile("Scripts/ExtensionGrid.json", function(text){
 	var data = JSON.parse(text);
 	database["data"] = data;
 	database.FillTeacherNames();
-	AddAutocomplete(document.getElementById("TeacherNameInput"), database.teachernames);
+	AddAutocomplete(document.getElementById("TeacherLookupInput"), database.teachernames);
 }); 
