@@ -1,4 +1,6 @@
-﻿[{
+﻿
+[
+	{
 		"Last Names": "Alvarado",
 		"First Names": "Alejandra",
 		"1st": "ESL",
@@ -6,8 +8,7 @@
 		"3rd": "R210",
 		"4th": "PLAN",
 		"5th": "R210",
-		"6th": "ESL",
-		"undefined": "Workrooms"
+		"6th": "ESL"
 	},
 	{
 		"Last Names": "Astudillo",
@@ -18,8 +19,7 @@
 		"RAP": "E224",
 		"4th": "E224",
 		"5th": "E224",
-		"6th": "E224",
-		"undefined": "319"
+		"6th": "E224"
 	},
 	{
 		"Last Names": "Aylor",
@@ -30,8 +30,7 @@
 		"RAP": "ILT",
 		"4th": "R116",
 		"5th": "R116",
-		"6th": "R116",
-		"undefined": "321"
+		"6th": "R116"
 	},
 	{
 		"Last Names": "Babik",
@@ -41,8 +40,7 @@
 		"3rd": "L233",
 		"4th": "L233",
 		"5th": "L233",
-		"6th": "PLAN",
-		"undefined": "328"
+		"6th": "PLAN"
 	},
 	{
 		"Last Names": "Bates",
@@ -53,8 +51,7 @@
 		"RAP": "R211",
 		"4th": "R211",
 		"5th": "R211",
-		"6th": "R211",
-		"undefined": "323"
+		"6th": "R211"
 	},
 	{
 		"Last Names": "Baum",
@@ -65,8 +62,7 @@
 		"RAP": "L235",
 		"4th": "L235",
 		"5th": "L235",
-		"6th": "PLAN",
-		"undefined": "332"
+		"6th": "PLAN"
 	},
 	{
 		"Last Names": "Bloemer",
@@ -76,8 +72,7 @@
 		"3rd": "R102",
 		"4th": "R102",
 		"5th": "R107",
-		"6th": "PLAN",
-		"undefined": "322"
+		"6th": "PLAN"
 	},
 	{
 		"Last Names": "Bradshaw",
@@ -88,8 +83,7 @@
 		"RAP": "Y246",
 		"4th": "Y246",
 		"5th": "Y246",
-		"6th": "Y246",
-		"undefined": "320"
+		"6th": "Y246"
 	},
 	{
 		"Last Names": "Brandt",
@@ -99,8 +93,7 @@
 		"3rd": "R110",
 		"4th": "LIB1",
 		"5th": "LIB1",
-		"6th": "LIB1",
-		"undefined": "325"
+		"6th": "LIB1"
 	},
 	{
 		"Last Names": "Briggs",
@@ -111,8 +104,7 @@
 		"RAP": "R206",
 		"4th": "R206",
 		"5th": "R206",
-		"6th": "R206",
-		"undefined": "324"
+		"6th": "R206"
 	},
 	{
 		"Last Names": "Buckler",
@@ -122,8 +114,7 @@
 		"3rd": "L129",
 		"4th": "R116",
 		"5th": "R115",
-		"6th": "PLAN",
-		"undefined": "254"
+		"6th": "PLAN"
 	},
 	{
 		"Last Names": "Caldwell",
@@ -134,8 +125,7 @@
 		"RAP": "ILT",
 		"4th": "E125",
 		"5th": "E125",
-		"6th": "E125",
-		"undefined": "New Copy WKrm                  251"
+		"6th": "E125"
 	},
 	{
 		"Last Names": "Call",
@@ -156,8 +146,7 @@
 		"3rd": "M2",
 		"4th": "M2",
 		"5th": "M2",
-		"6th": "M2",
-		"undefined": "Staff Support"
+		"6th": "M2"
 	},
 	{
 		"Last Names": "Carr",
@@ -167,8 +156,7 @@
 		"3rd": "PLAN",
 		"4th": "L230",
 		"5th": "R208",
-		"6th": "L230",
-		"undefined": "309"
+		"6th": "L230"
 	},
 	{
 		"Last Names": "Caudill",
@@ -178,8 +166,7 @@
 		"3rd": "L131",
 		"4th": "L131",
 		"5th": "PLAN",
-		"6th": "L131",
-		"undefined": "350"
+		"6th": "L131"
 	},
 	{
 		"Last Names": "Clark",
@@ -189,8 +176,7 @@
 		"3rd": "L228",
 		"4th": "L134",
 		"5th": "L228",
-		"6th": "L134",
-		"undefined": "338"
+		"6th": "L134"
 	},
 	{
 		"Last Names": "Collins",
@@ -201,8 +187,7 @@
 		"RAP": "R103",
 		"4th": "PLAN",
 		"5th": "R103",
-		"6th": "R103",
-		"undefined": "344"
+		"6th": "R103"
 	},
 	{
 		"Last Names": "Craig",
@@ -213,8 +198,7 @@
 		"RAP": "Band",
 		"4th": "PLAN",
 		"5th": "Band",
-		"6th": "Band",
-		"undefined": "313"
+		"6th": "Band"
 	},
 	{
 		"Last Names": "Darpel",
@@ -224,8 +208,7 @@
 		"3rd": "E222",
 		"4th": "E222",
 		"5th": "E222",
-		"6th": "E222",
-		"undefined": "335"
+		"6th": "E222"
 	},
 	{
 		"Last Names": "Deaton",
@@ -236,8 +219,7 @@
 		"RAP": "R201",
 		"4th": "PLAN",
 		"5th": "R201",
-		"6th": "R201",
-		"undefined": "Attendance"
+		"6th": "R201"
 	},
 	{
 		"Last Names": "Demler",
@@ -248,8 +230,7 @@
 		"RAP": "Attd.Off",
 		"4th": "Attd. Off",
 		"5th": "Attd. Off",
-		"6th": "Attd. Off",
-		"undefined": "346"
+		"6th": "Attd. Off"
 	},
 	{
 		"Last Names": "Denigan",
@@ -260,8 +241,7 @@
 		"RAP": "R204",
 		"4th": "R215",
 		"5th": "PLAN",
-		"6th": "R215",
-		"undefined": "Finance"
+		"6th": "R215"
 	},
 	{
 		"Last Names": "Dews",
@@ -271,8 +251,7 @@
 		"3rd": "R213",
 		"4th": "R213",
 		"5th": "PLAN",
-		"6th": "R213",
-		"undefined": "308"
+		"6th": "R213"
 	},
 	{
 		"Last Names": "Douthit",
@@ -1259,5 +1238,115 @@
 		"4th": "312",
 		"5th": "312",
 		"6th": "312"
+	},
+	{
+		"Last Names": "Turner",
+		"First Names": "Matt",
+		"1st": "301",
+		"2nd": "301",
+		"3rd": "301",
+		"RAP": "301",
+		"4th": "301",
+		"5th": "301",
+		"6th": "301"
+	},
+	{
+		"Last Names": "Brendel",
+		"First Names": "Elaine",
+		"1st": "306",
+		"2nd": "306",
+		"3rd": "306",
+		"RAP": "306",
+		"4th": "306",
+		"5th": "306",
+		"6th": "306"
+	},
+	{
+		"Last Names": "Shafer",
+		"First Names": "Matt",
+		"1st": "311",
+		"2nd": "311",
+		"3rd": "311",
+		"RAP": "311",
+		"4th": "311",
+		"5th": "311",
+		"6th": "311"
+	},
+	{
+		"Last Names": "Dusing",
+		"First Names": "Andy",
+		"1st": "302",
+		"2nd": "302",
+		"3rd": "302",
+		"RAP": "302",
+		"4th": "302",
+		"5th": "302",
+		"6th": "302"
+	},
+	{
+		"Last Names": "Ryan",
+		"First Names": "Cody",
+		"1st": "303",
+		"2nd": "303",
+		"3rd": "303",
+		"RAP": "303",
+		"4th": "303",
+		"5th": "303",
+		"6th": "303"
+	},
+	{
+		"Last Names": "Tracy",
+		"First Names": "Anna Marie",
+		"1st": "310",
+		"2nd": "310",
+		"3rd": "310",
+		"RAP": "310",
+		"4th": "310",
+		"5th": "310",
+		"6th": "310"
+	},
+	{
+		"Last Names": "Coleman",
+		"First Names": "Amy",
+		"1st": "305",
+		"2nd": "305",
+		"3rd": "305",
+		"RAP": "305",
+		"4th": "305",
+		"5th": "305",
+		"6th": "305"
+	},
+	{
+		"Last Names": "Arkenberg",
+		"First Names": "Erik",
+		"1st": "337",
+		"2nd": "337",
+		"3rd": "337",
+		"RAP": "337",
+		"4th": "337",
+		"5th": "337",
+		"6th": "337"
+	},
+	{
+		"Last Names": "Shilling",
+		"First Names": "Michelle",
+		"1st": "307",
+		"2nd": "307",
+		"3rd": "307",
+		"RAP": "307",
+		"4th": "307",
+		"5th": "307",
+		"6th": "307"
+	},
+	{
+		"Last Names": "Parks",
+		"First Names": "Katie",
+		"1st": "347",
+		"2nd": "347",
+		"3rd": "347",
+		"RAP": "347",
+		"4th": "347",
+		"5th": "347",
+		"6th": "347"
 	}
 ]
