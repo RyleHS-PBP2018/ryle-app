@@ -13,7 +13,7 @@ function readTextFile(file, callback) {
 }
 
 
-function DisplayInfoByRN(FromTo){ //TODO Handle room numbers that have letters in them, and add band, gym, and library compatibility.
+function DisplayInfoForDirections(FromTo){ //TODO Handle room numbers that have letters in them, and add band, gym, and library compatibility.
 	let e = document.getElementById("ClassPeriod");
 	let period = e.options[e.selectedIndex].value;
 	let roomnumber = parseInt(document.getElementById(FromTo + "RoomNumber").value);
@@ -23,7 +23,7 @@ function DisplayInfoByRN(FromTo){ //TODO Handle room numbers that have letters i
 		document.getElementById(FromTo + "ErrorLogContent").innerHTML = index["errmsg"];
 		document.getElementById(FromTo + "ErrorLogContent").style.display = "block";
 	}
-	else { 
+	else {
 		document.getElementById(FromTo + "ErrorLogContent").style.display = "none";
 		document.getElementById(FromTo + "RoomRNumber").innerHTML = "Room " + database.data[index["iterator"]][period];
 		document.getElementById(FromTo + "RoomTeacher").innerHTML = database.data[index["iterator"]]["Last Names"];
@@ -91,7 +91,7 @@ function GetRoomIndex(roomnumber, period, FromTo) {
 		DBRoomNumber = DBRoomNumber.replace(/\D/g,''); //Remove the wing letter(s) from the resultant database value
 		
 		if (DBRoomNumber == roomnumber) {
-			console.log("DisplayInfoByRN: Room Data located!");
+			console.log("DisplayInfoForDirections: Room Data located!");
 			break;
 		}
 		else if (iterator == database.data.length - 2) { //Catches invalid room numbers (late catch for characters, NaN values, and decimals)
@@ -247,8 +247,43 @@ document.addEventListener("click", function (e) {
 } 
 
 
+function appendEnterHandlers(itemid) {
+	let buttonid = undefined;
+	let ele = document.getElementById(itemid);
+	
+	switch(itemid) {
+		case "FromRoomNumber":
+		case "ToRoomNumber":
+			buttonid = "DirectionsSubmitButton";
+		break;
+		
+		case "TeacherLookupInput":
+			buttonid = "TeacherLookupSubmitButton";
+		break;
+		
+		
+		default:
+			console.log(item.id + " does not have an assigned submit button!");
+			return false;
+		break;
+	}
+	
+	
+	ele.addEventListener("keyup", 
+	function(event) {
+		event.preventDefault();
+		// Number 13 is the "Enter" key on the keyboard
+		if (event.keyCode === 13) {
+			// Trigger the button element with a click
+			document.getElementById(buttonid).click();
+		}
+	}); 
+}
+
+
 // --------------- Seperation Between function definitions and actual scripts ----------------
 
+//Initialize database that will hold .json data such as room numbers, teachers, and class periods.
 var database = {
     data:undefined,
 	teachernames: [],
@@ -260,9 +295,18 @@ var database = {
 	}
 }
 
+//Asynchronously read the database file then return the result to the database object.
 readTextFile("Scripts/ExtensionGrid.json", function(text){
-	var data = JSON.parse(text);
+	let data = JSON.parse(text);
 	database["data"] = data;
 	database.FillTeacherNames();
 	AddAutocomplete(document.getElementById("TeacherLookupInput"), database.teachernames);
+	
+	//Assign event handlers to each Text Input Box to submit inputs on an ENTER keypress
+	let InputBoxList = document.getElementsByClassName("TextInputBox");
+
+	appendEnterHandlers(InputBoxList.ToRoomNumber.id);
+	appendEnterHandlers(InputBoxList.FromRoomNumber.id);
+	appendEnterHandlers(InputBoxList.TeacherLookupInput.id);
 }); 
+
