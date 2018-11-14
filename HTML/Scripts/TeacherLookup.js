@@ -63,6 +63,34 @@ function DisplayInfoByTeacher() {
 }
 
 
+function DisplayInfoByRN() {
+	let roomnumber = document.getElementById("RoomLookupInput").value;
+	if (roomnumber != "") {
+		document.getElementById("RoomLookupContent").style.display = "block";
+		document.getElementById("RLRoomNumber").innerHTML = "Room " + roomnumber;
+		document.getElementById("RLPeriod1").innerHTML = "1st: " + GetTeacherNameByRoomPeriod(roomnumber, "1st");
+		document.getElementById("RLPeriod2").innerHTML = "2nd: " + GetTeacherNameByRoomPeriod(roomnumber, "2nd");
+		document.getElementById("RLPeriod3").innerHTML = "3rd: " + GetTeacherNameByRoomPeriod(roomnumber, "3rd");
+		document.getElementById("RLPeriodRAP").innerHTML = "RAP: " + GetTeacherNameByRoomPeriod(roomnumber, "RAP");
+		document.getElementById("RLPeriod4").innerHTML = "4th: " + GetTeacherNameByRoomPeriod(roomnumber, "4th");
+		document.getElementById("RLPeriod5").innerHTML = "5th: " + GetTeacherNameByRoomPeriod(roomnumber, "5th");
+		document.getElementById("RLPeriod6").innerHTML = "6th: " + GetTeacherNameByRoomPeriod(roomnumber, "6th");
+	}
+}
+
+
+function GetTeacherNameByRoomPeriod(room, period) {
+	let comparisonNumber = "";
+	for (i = 0; i < database.data.length; i++) {
+		if (database.data[i][period] != undefined) {
+			comparisonNumber = database.data[i][period].replace(/\D/g,'');
+			if (comparisonNumber == room) { return database.data[i]["Last Names"]; }
+		} else continue;
+	}
+	return "N/A";
+}
+
+
 function GetValidRoomInfo(iterator, period) {
 	if (database.data[iterator][period] != undefined) {
 		return database.data[iterator][period];
@@ -261,6 +289,9 @@ function appendEnterHandlers(itemid) {
 			buttonid = "TeacherLookupSubmitButton";
 		break;
 		
+		case "RoomLookupInput":
+			buttonid = "RoomLookupSubmitButton";
+		break;
 		
 		default:
 			console.log(item.id + " does not have an assigned submit button!");
@@ -308,5 +339,6 @@ readTextFile("Scripts/ExtensionGrid.json", function(text){
 	appendEnterHandlers(InputBoxList.ToRoomNumber.id);
 	appendEnterHandlers(InputBoxList.FromRoomNumber.id);
 	appendEnterHandlers(InputBoxList.TeacherLookupInput.id);
+	appendEnterHandlers(InputBoxList.RoomLookupInput.id);
 }); 
 

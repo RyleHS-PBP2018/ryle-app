@@ -38,11 +38,11 @@
 						<form>
 						
 							From Room:
-							<input id="FromRoomNumber" type="text" size="10" maxlength="4" placeholder="101" value="" autocomplete="off"/>
+							<input class="TextInputBox" id="FromRoomNumber" type="text" size="10" maxlength="4" placeholder="101" value="" autocomplete="off"/>
 							<br/>
 							
 							To Room:
-							<input id="ToRoomNumber" type="text" size="10" maxlength="4" placeholder="102" value="" autocomplete="off"/>
+							<input class="TextInputBox" id="ToRoomNumber" type="text" size="10" maxlength="4" placeholder="102" value="" autocomplete="off"/>
 							<img src="Images/TooltipQuestionMark.png" height="20" width="20" style="vertical-align: text-bottom;"
 							title="Room numbers such as Room 116-A should be entered as 116a or 116A"/>
 							<br/>
@@ -59,7 +59,7 @@
 							
 							<br/>
 							
-							<button type="button" onclick="DisplayInfoByRN('To'); DisplayInfoByRN('From'); CheckErrorBoxes('Directions');">Submit</button>
+							<button id="DirectionsSubmitButton" type="button" onclick="DisplayInfoForDirections('To'); DisplayInfoForDirections('From'); CheckErrorBoxes('Directions');">Submit</button>
 							
 						</form>
 					</div>
@@ -92,9 +92,9 @@
 						<form>
 							Teacher Name:
 							<div class="autocomplete" style="width: 70.8%;">
-								<input id="TeacherLookupInput" type="text" size="25" placeholder="Last Name, First Name" value="" autocomplete="off"/>
+								<input class="TextInputBox" id="TeacherLookupInput" type="text" size="25" placeholder="Last Name, First Name" value="" autocomplete="off"/>
 							</div>
-							<button type="button" onclick="DisplayInfoByTeacher();">Submit</button>
+							<button id="TeacherLookupSubmitButton" type="button" onclick="DisplayInfoByTeacher();">Submit</button>
 						</form>
 					</div>
 					
@@ -112,10 +112,11 @@
 				
 				<!-- Tab for the Room Lookup Utility -->
 				<div id="RoomLookupTab" class="SelectionTab" style="display: none;">
-					<div id="RoomLookupFormDiv" class="sidebar">
+					<div id="RoomLookupForm" class="sidebar">
 						<form>
 							Room Number:
-							<input id="RoomLookupInput" type="text" size="5" value="" autocomplete="off"/>
+							<input class="TextInputBox" id="RoomLookupInput" type="text" size="5" value="" autocomplete="off"/>
+							<button id="RoomLookupSubmitButton" type="button" onclick="DisplayInfoByRN();">Submit</button>
 						</form>
 					</div>
 					
