@@ -312,17 +312,76 @@ function appendEnterHandlers(itemid) {
 }
 
 
+function ResizeCanvas(canvasElement,img, imgOrigin) {
+	let ele = document.getElementById(canvasElement);
+	let parent = ele.parentElement;
+	let ctx = ele.getContext("2d");
+	ele.width = parent.clientWidth;
+	ele.height = parent.clientHeight;
+	ctx.drawImage(
+		img, //Image variable
+		imgOrigin.x, //X position
+		imgOrigin.y, //Y position
+		ele.width*MAP_SCALE, //Width
+		ele.width*MAP_SCALE //Height
+		);
+}
+
+
+function DrawDirections(canvasElement, img, imgOrigin, fromRoom, toRoom) {
+	let ele = document.getElementById(canvasElement);
+	let ctx = ele.getContext("2d");
+	let imgSize = ele.width*MAP_SCALE;
+	
+	ctx.fillStyle = 'red';
+	if (fromRoom != undefined) {
+		try {
+			ctx.fillRect(imgOrigin.x + database.RNdata[fromRoom]["RoomX"]*imgSize, imgOrigin.y + database.RNdata[fromRoom]["RoomY"]*imgSize, 6, 6);
+		}
+		catch(err) {
+			console.log(err.message);
+		}
+	}
+	
+	ctx.fillStyle = 'green';
+	if (toRoom != undefined) {
+		try {
+			ctx.fillRect(imgOrigin.x + database.RNdata[toRoom]["RoomX"]*imgSize, imgOrigin.y + database.RNdata[toRoom]["RoomY"]*imgSize, 6, 6);
+		}
+		catch(err) {
+			console.log(err.message);
+		}
+	}
+}
+
+
 // --------------- Seperation Between function definitions and actual scripts ----------------
+
+//Constants Declarations
+var MAP_SCALE = 0.8;
 
 //Initialize database that will hold .json data such as room numbers, teachers, and class periods.
 var database = {
     data:undefined,
-	teachernames: [],
+	RNdata:undefined,
+	teachernames: [], //This array is used exclusively as an input for autocomplete
 	
 	FillTeacherNames: function() {
 		for (i = 0; i < this.data.length; i++) {
 			this.teachernames.push(this.data[i]["Last Names"] + ", " + this.data[i]["First Names"]);
 		}
+	}
+}
+
+var directionsData = {
+	toRoom:undefined,
+	fromRoom:undefined,
+	
+	setToRoom: function(RN) { this.toRoom = RN; },
+	setFromRoom: function(RN) { this.fromRoom = RN; },
+	setFromToRoomsFromInput: function() {
+		this.fromRoom = document.getElementById("FromRoomNumber").value;
+		this.toRoom = document.getElementById("ToRoomNumber").value;
 	}
 }
 
@@ -341,4 +400,42 @@ readTextFile("Scripts/ExtensionGrid.json", function(text){
 	appendEnterHandlers(InputBoxList.TeacherLookupInput.id);
 	appendEnterHandlers(InputBoxList.RoomLookupInput.id);
 }); 
+
+readTextFile("Scripts/CanvasRoomCoordinates.json", function(text){
+	let data = JSON.parse(text);
+	database["RNdata"] = data;
+});
+
+
+window.onload = function() {
+    var canvas = document.getElementById("Map1Canvas");
+    var ctx = canvas.getContext("2d");
+	ctx.boxSizing = "border-box";
+	
+    var img = new Image;
+	img.src = 'Images/1stFloorMap.png'
+	
+    img.onload = function() {
+		ctx.imageSmoothingEnabled = false;
+		ctx.drawImage(img, 0, 0, img.width, img.height);
+		
+		window.setInterval(function() {
+			let imgOrigin = {
+				x: canvas.width / 2 - (canvas.width*MAP_SCALE) / 2,
+				y: canvas.height / 2 - (canvas.width*MAP_SCALE) / 2
+			}
+			
+			ResizeCanvas("Map1Canvas", img, imgOrigin);
+			ResizeCanvas("Map2Canvas", img, imgOrigin);
+			DrawDirections("Map1Canvas", img, imgOrigin, directionsData.toRoom, directionsData.fromRoom);
+			DrawDirections("Map2Canvas", img, imgOrigin);
+		}, 250);
+	};
+	
+	
+}; 
+
+
+
+
 
