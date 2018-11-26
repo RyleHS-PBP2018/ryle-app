@@ -1,5 +1,5 @@
 
-
+//Reads external files into the script
 function readTextFile(file, callback) {
     var rawFile = new XMLHttpRequest();
     rawFile.overrideMimeType("application/json");
@@ -13,6 +13,7 @@ function readTextFile(file, callback) {
 }
 
 
+//Displays info for users based on specified room number in HTML text boxes
 function DisplayInfoForDirections(FromTo){ //TODO Handle room numbers that have letters in them, and add band, gym, and library compatibility.
 	let e = document.getElementById("ClassPeriod");
 	let period = e.options[e.selectedIndex].value;
@@ -31,6 +32,7 @@ function DisplayInfoForDirections(FromTo){ //TODO Handle room numbers that have 
 }
 
 
+//Displays info in the TeacherLookup Utility based on a specified teacher name
 function DisplayInfoByTeacher() {
 	let namestring = document.getElementById("TeacherLookupInput").value;
 	namestring = namestring.split(", "); // ["Last Name", "First Name"]
@@ -63,6 +65,7 @@ function DisplayInfoByTeacher() {
 }
 
 
+//Displays which teachers are in which room throughout the day
 function DisplayInfoByRN() {
 	let roomnumber = document.getElementById("RoomLookupInput").value;
 	if (roomnumber != "") {
@@ -79,6 +82,7 @@ function DisplayInfoByRN() {
 }
 
 
+//Returns a teacher name for a specified room number and period, or N/A if the room is unoccupied or invalid
 function GetTeacherNameByRoomPeriod(room, period) {
 	let comparisonNumber = "";
 	for (i = 0; i < database.data.length; i++) {
@@ -91,6 +95,8 @@ function GetTeacherNameByRoomPeriod(room, period) {
 }
 
 
+//Returns a room number for a specified teacher and period using a database iterator, or N/A if the teacher doesn't have a class.
+//TODO Rename this function and above to better reflect function usage
 function GetValidRoomInfo(iterator, period) {
 	if (database.data[iterator][period] != undefined) {
 		return database.data[iterator][period];
@@ -98,6 +104,7 @@ function GetValidRoomInfo(iterator, period) {
 }
 
 
+//Returns the iterator for a specified room number, and returns an error message along with the iterator if something went wrong
 function GetRoomIndex(roomnumber, period, FromTo) {
 	let iterator = 0;
 	let DBRoomNumber = "";
@@ -135,6 +142,7 @@ function GetRoomIndex(roomnumber, period, FromTo) {
 }
 
 
+//Checks to see if GetRoomIndex returned an error message, and changes error box visibility respectively
 function CheckErrorBoxes(type) {
 	if (type == "Directions") {
 		if ( document.getElementById("ToErrorLogContent").style.display == "none" && document.getElementById("FromErrorLogContent").style.display == "none") {
@@ -150,6 +158,7 @@ function CheckErrorBoxes(type) {
 }
 
 
+//Switches the visibility of the Utility tabs when each one is clicked
 function SwitchTab(ElementID) { //TODO Hide ErrorLog and reset its content when switching tabs
 	//If element specified is not already visible
 	if (document.getElementById(ElementID + "LookupTab").style.display != "block") {
@@ -177,6 +186,7 @@ function SwitchTab(ElementID) { //TODO Hide ErrorLog and reset its content when 
 }
 
 
+//Freeware from W3Schools.com. Adds autocomplete functionality to a specified text box based on a database
 function AddAutocomplete(inp, arr) {
   /*the autocomplete function takes two arguments,
   the text field element and an array of possible autocompleted values:*/
@@ -275,6 +285,7 @@ document.addEventListener("click", function (e) {
 } 
 
 
+//Adds ENTER key functionality to text boxes for smoother user experience
 function appendEnterHandlers(itemid) {
 	let buttonid = undefined;
 	let ele = document.getElementById(itemid);
@@ -312,6 +323,7 @@ function appendEnterHandlers(itemid) {
 }
 
 
+//Resizes a canvas element to the size of its parent element
 function ResizeCanvas(canvasElement,img, imgOrigin) {
 	let ele = document.getElementById(canvasElement);
 	let parent = ele.parentElement;
@@ -328,6 +340,7 @@ function ResizeCanvas(canvasElement,img, imgOrigin) {
 }
 
 
+//Will eventually draw a full path from point to point, for now draws boxes at the start and end point of the path
 function DrawDirections(canvasElement, img, imgOrigin, fromRoom, toRoom) {
 	let ele = document.getElementById(canvasElement);
 	let ctx = ele.getContext("2d");
@@ -336,7 +349,7 @@ function DrawDirections(canvasElement, img, imgOrigin, fromRoom, toRoom) {
 	ctx.fillStyle = 'red';
 	if (fromRoom != undefined) {
 		try {
-			ctx.fillRect(imgOrigin.x + database.RNdata[fromRoom]["RoomX"]*imgSize, imgOrigin.y + database.RNdata[fromRoom]["RoomY"]*imgSize, 6, 6);
+			ctx.fillRect((imgOrigin.x + database.RNdata[fromRoom]["RoomX"]*imgSize), (imgOrigin.y + database.RNdata[fromRoom]["RoomY"]*imgSize), 6, 6);
 		}
 		catch(err) {
 			console.log(err.message);
@@ -358,14 +371,17 @@ function DrawDirections(canvasElement, img, imgOrigin, fromRoom, toRoom) {
 // --------------- Seperation Between function definitions and actual scripts ----------------
 
 //Constants Declarations
+
+//Specifies the percent of the width of the canvas elements that the maps will take up. (0.01 < MAP_SCALE < 1.00)
 var MAP_SCALE = 0.8;
 
 //Initialize database that will hold .json data such as room numbers, teachers, and class periods.
 var database = {
-    data:undefined,
-	RNdata:undefined,
+    data:undefined, //Holds teacher info (which room they're in throughout the day)
+	RNdata:undefined, //Holds room coordinate information
 	teachernames: [], //This array is used exclusively as an input for autocomplete
 	
+	//Initializes the teachernames array on file load
 	FillTeacherNames: function() {
 		for (i = 0; i < this.data.length; i++) {
 			this.teachernames.push(this.data[i]["Last Names"] + ", " + this.data[i]["First Names"]);
@@ -373,10 +389,16 @@ var database = {
 	}
 }
 
+
+//Will eventually be the main object that holds all directions data and information to draw directions to the canvas
 var directionsData = {
 	toRoom:undefined,
 	fromRoom:undefined,
 	
+	linesToDraw:undefined, //Will specify which lines are being drawn on the canvas
+	
+	
+	//Setters
 	setToRoom: function(RN) { this.toRoom = RN; },
 	setFromRoom: function(RN) { this.fromRoom = RN; },
 	setFromToRoomsFromInput: function() {
@@ -393,6 +415,7 @@ readTextFile("Scripts/ExtensionGrid.json", function(text){
 	AddAutocomplete(document.getElementById("TeacherLookupInput"), database.teachernames);
 	
 	//Assign event handlers to each Text Input Box to submit inputs on an ENTER keypress
+	//This section should be moved to the window.onload function
 	let InputBoxList = document.getElementsByClassName("TextInputBox");
 
 	appendEnterHandlers(InputBoxList.ToRoomNumber.id);
@@ -407,6 +430,7 @@ readTextFile("Scripts/CanvasRoomCoordinates.json", function(text){
 });
 
 
+//When the page loads, do this:
 window.onload = function() {
     var canvas = document.getElementById("Map1Canvas");
     var ctx = canvas.getContext("2d");
@@ -417,7 +441,6 @@ window.onload = function() {
 	
     img.onload = function() {
 		ctx.imageSmoothingEnabled = false;
-		ctx.drawImage(img, 0, 0, img.width, img.height);
 		
 		window.setInterval(function() {
 			let imgOrigin = {
@@ -427,8 +450,8 @@ window.onload = function() {
 			
 			ResizeCanvas("Map1Canvas", img, imgOrigin);
 			ResizeCanvas("Map2Canvas", img, imgOrigin);
-			DrawDirections("Map1Canvas", img, imgOrigin, directionsData.toRoom, directionsData.fromRoom);
-			DrawDirections("Map2Canvas", img, imgOrigin);
+			DrawDirections("Map1Canvas", img, imgOrigin, directionsData.fromRoom, directionsData.toRoom);
+			DrawDirections("Map2Canvas", img, imgOrigin, directionsData.fromRoom, directionsData.toRoom);
 		}, 250);
 	};
 	
