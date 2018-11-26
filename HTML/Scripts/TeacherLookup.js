@@ -424,7 +424,7 @@ readTextFile("Scripts/ExtensionGrid.json", function(text){
 	appendEnterHandlers(InputBoxList.RoomLookupInput.id);
 }); 
 
-readTextFile("Scripts/CanvasRoomCoordinates.json", function(text){
+readTextFile("Scripts/RoomCoordinates.json", function(text){
 	let data = JSON.parse(text);
 	database["RNdata"] = data;
 });
