@@ -5,7 +5,7 @@
 		<meta charset="UTF-8"/>
         <title>Ryle Maps</title>
 		<link rel="shortcut icon" href="Images/Ryle Crest.jpeg"/>
-		<link rel= "stylesheet" type= "text/css" href="Styles/Style.css"/>
+		<link rel="stylesheet" type="text/css" href="Styles/Style.css"/>
 	
 		<script src="Scripts/TeacherLookup.js"></script>
 		
@@ -59,7 +59,7 @@
 							
 							<br/>
 							
-							<button id="DirectionsSubmitButton" type="button" onclick="DisplayInfoForDirections('To'); DisplayInfoForDirections('From'); CheckErrorBoxes('Directions'); directionsData.setFromToRoomsFromInput();">Submit</button>
+							<button id="DirectionsSubmitButton" type="button" onclick="directionsData.StartPathfinding(); DisplayInfoForDirections('To'); DisplayInfoForDirections('From'); CheckErrorBoxes('Directions');">Submit</button>
 							
 						</form>
 					</div>

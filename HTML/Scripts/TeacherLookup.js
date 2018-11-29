@@ -340,45 +340,20 @@ function ResizeCanvas(canvasElement,img, imgOrigin) {
 }
 
 
-//Will eventually draw a full path from point to point, for now draws boxes at the start and end point of the path
-function DrawDirections(canvasElement, img, imgOrigin, fromRoom, toRoom) {
-	let ele = document.getElementById(canvasElement);
-	let ctx = ele.getContext("2d");
-	let imgSize = ele.width*MAP_SCALE;
-	
-	ctx.fillStyle = 'red';
-	if (fromRoom != undefined) {
-		try {
-			ctx.fillRect((imgOrigin.x + database.RNdata[fromRoom]["RoomX"]*imgSize), (imgOrigin.y + database.RNdata[fromRoom]["RoomY"]*imgSize), 6, 6);
-		}
-		catch(err) {
-			console.log(err.message);
-		}
-	}
-	
-	ctx.fillStyle = 'green';
-	if (toRoom != undefined) {
-		try {
-			ctx.fillRect(imgOrigin.x + database.RNdata[toRoom]["RoomX"]*imgSize, imgOrigin.y + database.RNdata[toRoom]["RoomY"]*imgSize, 6, 6);
-		}
-		catch(err) {
-			console.log(err.message);
-		}
-	}
-}
-
-
 // --------------- Seperation Between function definitions and actual scripts ----------------
 
 //Constants Declarations
+	//Specifies the percent of the width of the canvas elements that the maps will take up. (0.01 < MAP_SCALE < 1.00)
+	var MAP_SCALE = 0.8;
+	
+//End of Constants Declarations
 
-//Specifies the percent of the width of the canvas elements that the maps will take up. (0.01 < MAP_SCALE < 1.00)
-var MAP_SCALE = 0.8;
 
 //Initialize database that will hold .json data such as room numbers, teachers, and class periods.
 var database = {
     data:undefined, //Holds teacher info (which room they're in throughout the day)
 	RNdata:undefined, //Holds room coordinate information
+	Halldata:undefined, //Holds hallway coordinate information
 	teachernames: [], //This array is used exclusively as an input for autocomplete
 	
 	//Initializes the teachernames array on file load
@@ -394,9 +369,192 @@ var database = {
 var directionsData = {
 	toRoom:undefined,
 	fromRoom:undefined,
+	imgSize:undefined,
 	
-	linesToDraw:undefined, //Will specify which lines are being drawn on the canvas
+	linesToDraw:[], //Will specify which lines are being drawn on the canvas
 	
+	
+	StartPathfinding : function() {
+		this.fromRoom = document.getElementById("FromRoomNumber").value;
+		this.toRoom = document.getElementById("ToRoomNumber").value;
+		this.ClearPaths();
+		this.AddNewPath(this.fromRoom, this.toRoom);
+	},
+	
+	
+	//TODO Add actual errors to be thrown, then throw them and catch them in the containing function
+	calculateEntryLine: function(room) {
+		//Get coordinates of room in percentage
+		//try { database.RNdata[room]["RoomX"]; }
+		//catch { console.log("Room " + room + " is an invalid room number."); return false; }
+		//Revert coordinates of room to pixel coordinates
+		let point = [database.RNdata[room]["RoomX"], database.RNdata[room]["RoomY"]];
+		point[0] = parseFloat(point[0])*this.imgSize;
+		point[1] = parseFloat(point[1])*this.imgSize;
+		
+		//Create a line that has a length = 5% of imgSize in the direction of ExitDirection
+		let intersectLine = undefined;
+		switch(database.RNdata[room]["ExitDirection"]) {
+			case "Up":
+				intersectLine = [point[0], point[1], point[0], point[1] - this.imgSize*0.1];
+				break;
+			
+			case "Right":
+				intersectLine = [point[0], point[1], point[0] + this.imgSize*0.1, point[1]];
+				break;
+			
+			case "Down":
+				intersectLine = [point[0], point[1], point[0], point[1] + this.imgSize*0.1];
+				break;
+				
+			case "Left":
+				intersectLine = [point[0], point[1], point[0] - this.imgSize*0.1, point[1]];
+				break;
+			
+			default:
+				console.log("Exit Direction undefined!");
+				return false;
+				break;
+		}
+		
+		
+		//Loop to find which hallway line is being intersected and get intersection point
+		for (var i = 0; i < database.Halldata.length; i++) {
+			//For each hallway, set up this object, which holds coordinates in pixel measurements
+			let objectCoords = {"X1":undefined, "Y1":undefined, "X2":undefined, "Y2":undefined};
+			
+			objectCoords["X1"] = parseFloat(database.Halldata[i]["X1"])*this.imgSize;
+			objectCoords["Y1"] = parseFloat(database.Halldata[i]["Y1"])*this.imgSize;
+			objectCoords["X2"] = parseFloat(database.Halldata[i]["X2"])*this.imgSize;
+			objectCoords["Y2"] = parseFloat(database.Halldata[i]["Y2"])*this.imgSize;
+			
+			//intersectPoint will be:
+			//If the line intersects: an object in the form of {"x": pixel coordinate, "y": pixel coordinate}
+			//Else: false
+			let intersectPoint = this.getIntersect(
+			intersectLine[0], intersectLine[1],
+			intersectLine[2], intersectLine[3],
+			objectCoords["X1"], objectCoords["Y1"],
+			objectCoords["X2"], objectCoords["Y2"]);
+			
+			//If the intersectPoint is not false, the intersect has been found
+			if (intersectPoint) {
+				//Return the line that spans from the room coordinate to the intersect coordinate, but in percentage coordinates
+				return {
+					"X1": point[0]/this.imgSize,
+					"Y1": point[1]/this.imgSize,
+					"X2": intersectPoint["x"]/this.imgSize,
+					"Y2": intersectPoint["y"]/this.imgSize
+					};
+			}
+		}
+		//If the line has not intersected a hallway line, something has gone wrong on the script side.
+		console.log("Entry Line for room " + room + " could not be found.");
+		return false;
+	},
+	
+	
+	getIntersect: function intersect(x1, y1, x2, y2, x3, y3, x4, y4) {
+		// Check if none of the lines are of length 0
+		if ((x1 === x2 && y1 === y2) || (x3 === x4 && y3 === y4)) {
+			return false; //I never liked geometry
+		}
+
+		denominator = ((y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1));
+
+		// Lines are parallel
+		if (denominator === 0) {
+			return false; //Geometry is the worst
+		}
+
+		let ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / denominator;
+		let ub = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / denominator;
+		//Good luck trying to figure out what that did.
+
+		// is the intersection along the segments
+		if (ua < 0 || ua > 1 || ub < 0 || ub > 1) {
+			//They say good code is self-documenting. This is not good code. It is efficient. glhf.
+			return false;
+		}
+
+		// Return an object with the x and y coordinates of the intersection
+		let x = x1 + ua * (x2 - x1);
+		let y = y1 + ua * (y2 - y1);
+		//More magic maths
+
+		return {x, y};
+	},
+	
+	
+	AddNewPath: function(roomA, roomB) {
+		//Convert room number strings into percentage coordinates
+		//Still don't know if we need these lines, I'm keeping them cuz they're tedious to type.
+		//let pointA = [database.RNdata[roomA]["RoomX"], database.RNdata[roomA]["RoomY"]];
+		//let pointB = [database.RNdata[roomB]["RoomX"], database.RNdata[roomB]["RoomY"]];
+		
+		//Calculate the line to be from the point coordinate to the intersect coordinate
+		//TODO Handle when the calculateEntryLine function returns false
+		let intersectLineA = this.calculateEntryLine(roomA);
+		let intersectLineB = this.calculateEntryLine(roomB);
+		
+        //Add the resultant lines to the directionsData["linesToDraw"]
+		this.linesToDraw.push(intersectLineA);
+		this.linesToDraw.push(intersectLineB);
+
+		//---- At this point, there should be two line segments drawn into the hallway, from room A and from room B.
+
+		//Starting with the hallway line that pointA intersects:
+		
+		//If the two rooms share the same hallway line
+			//Just draw a line to the two intersect points, add to directionsData["linesToDraw"]
+		//Else, See which endpoint of the line is closer to pointB's hallway line endpoints
+		//Add the shortest line (between intersect and hallway end) to the directionsData["linesToDraw"]
+		//Repeat (?)
+	},
+	
+	
+	DrawDirections: function(canvasElement, img, imgOrigin) {
+		let ele = document.getElementById(canvasElement);
+		let ctx = ele.getContext("2d");
+		let imgSize = ele.width*MAP_SCALE;
+		this.imgSize = imgSize
+		
+		//Draws a red box on the "from" room
+		ctx.fillStyle = 'red';
+		if (this.fromRoom != undefined) {
+			try {
+				ctx.fillRect((imgOrigin.x + database.RNdata[this.fromRoom]["RoomX"]*this.imgSize), (imgOrigin.y + database.RNdata[this.fromRoom]["RoomY"]*this.imgSize), 6, 6);
+			}
+			catch(err) {
+				console.log(err.message);
+			}
+		}
+		
+		//Draws a green box on the "to" room
+		ctx.fillStyle = 'green';
+		if (this.toRoom != undefined) {
+			try {
+				ctx.fillRect(imgOrigin.x + database.RNdata[this.toRoom]["RoomX"]*this.imgSize, imgOrigin.y + database.RNdata[this.toRoom]["RoomY"]*this.imgSize, 6, 6);
+			}
+			catch(err) {
+				console.log(err.message);
+			}
+		}
+		
+		ctx.lineWidth = 3;
+		ctx.strokeStyle="#FF8000";
+		ctx.beginPath();
+		//For each line in directionsData.linesToDraw
+		for (var i = 0; i < this.linesToDraw.length; i++) {
+			//Add the line to the path
+			ctx.moveTo(imgOrigin.x + this.linesToDraw[i]["X1"]*this.imgSize, imgOrigin.y + this.linesToDraw[i]["Y1"]*this.imgSize);
+			ctx.lineTo(imgOrigin.x + this.linesToDraw[i]["X2"]*this.imgSize, imgOrigin.y + this.linesToDraw[i]["Y2"]*this.imgSize);
+		}
+		//Draw the path
+		ctx.stroke();
+	},
+	
+	ClearPaths: function() { this.linesToDraw = []; },
 	
 	//Setters
 	setToRoom: function(RN) { this.toRoom = RN; },
@@ -429,13 +587,18 @@ readTextFile("Scripts/RoomCoordinates.json", function(text){
 	database["RNdata"] = data;
 });
 
+readTextFile("Scripts/HallwayCoordinates.json", function(text){
+	let data = JSON.parse(text);
+	database["Halldata"] = data;
+});
+
 
 //When the page loads, do this:
 window.onload = function() {
     var canvas = document.getElementById("Map1Canvas");
     var ctx = canvas.getContext("2d");
 	ctx.boxSizing = "border-box";
-	
+		
     var img = new Image;
 	img.src = 'Images/1stFloorMap.png'
 	
@@ -450,15 +613,9 @@ window.onload = function() {
 			
 			ResizeCanvas("Map1Canvas", img, imgOrigin);
 			ResizeCanvas("Map2Canvas", img, imgOrigin);
-			DrawDirections("Map1Canvas", img, imgOrigin, directionsData.fromRoom, directionsData.toRoom);
-			DrawDirections("Map2Canvas", img, imgOrigin, directionsData.fromRoom, directionsData.toRoom);
+			directionsData.DrawDirections("Map1Canvas", img, imgOrigin);
+			directionsData.DrawDirections("Map2Canvas", img, imgOrigin);
 		}, 250);
-	};
-	
-	
+	};	
 }; 
-
-
-
-
 
