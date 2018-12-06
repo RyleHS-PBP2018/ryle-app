@@ -798,8 +798,8 @@ window.onload = function() {
 	
     img.onload = function() {
 		ctx.imageSmoothingEnabled = false;
-		
-		window.setInterval(function() {
+	};	
+	window.setInterval(function() {
 			let imgOrigin = {
 				x: canvas.width / 2 - (canvas.width*MAP_SCALE) / 2,
 				y: canvas.height / 2 - (canvas.width*MAP_SCALE) / 2
@@ -807,10 +807,9 @@ window.onload = function() {
 			ResizeCanvas("Map1Canvas", img, imgOrigin);
 			ResizeCanvas("Map2Canvas", img, imgOrigin);
 			directionsData.lineOffset++;
-			if (directionsData.lineOffset > 21) { directionsData.lineOffset = 0; }
+			if (directionsData.lineOffset > 14) { directionsData.lineOffset = 0; }
 			directionsData.DrawDirections("Map1Canvas", img, imgOrigin);
 			//directionsData.DrawDirections("Map2Canvas", img, imgOrigin);
 		},  100);
-	};	
 }; 
 
