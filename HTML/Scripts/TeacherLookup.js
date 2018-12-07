@@ -340,7 +340,14 @@ function ResizeCanvas(canvasElement,img, imgOrigin) {
 }
 
 
-// --------------- Seperation Between function definitions and actual scripts ----------------
+// --------------- Seperation Between function definitions exception definitions ----------------
+
+function Intersect404Error() {}
+Intersect404Error.prototype = new Error();
+
+
+// --------------- Seperation Between exception definitions and scripts ----------------
+
 
 //Constants Declarations
 	//Specifies the percent of the width of the canvas elements that the maps will take up. (0.01 < MAP_SCALE < 1.00)
@@ -370,23 +377,33 @@ var directionsData = {
 	toRoom:undefined,
 	fromRoom:undefined,
 	imgSize:undefined,
+	lineOffset : 0,
 	
-	linesToDraw:[], //Will specify which lines are being drawn on the canvas
+	//Will specify which lines are being drawn on the canvas,
+	//MUST be an object with attributes "X1", "X2", "Y1", "Y2" in percent coords
+	linesToDraw:[], 
 	
 	
-	StartPathfinding : function() {
+	StartPathfinding : function() { //Initiates directions pathfinding, requires input in the directions text boxes
 		this.fromRoom = document.getElementById("FromRoomNumber").value;
 		this.toRoom = document.getElementById("ToRoomNumber").value;
-		this.ClearPaths();
-		this.AddNewPath(this.fromRoom, this.toRoom);
+		DisplayInfoForDirections('To');
+		DisplayInfoForDirections('From');
+		CheckErrorBoxes('Directions');
+		
+		if (this.fromRoom != undefined && this.toRoom != undefined) {
+			this.ClearPaths();
+			this.AddNewPath(this.fromRoom, this.toRoom);
+			console.log(this.linesToDraw);
+		}
 	},
 	
 	
-	//TODO Add actual errors to be thrown, then throw them and catch them in the containing function
 	calculateEntryLine: function(room) {
 		//Get coordinates of room in percentage
-		//try { database.RNdata[room]["RoomX"]; }
-		//catch { console.log("Room " + room + " is an invalid room number."); return false; }
+		try { database.RNdata[room]["RoomX"]; }
+		catch(e) { throw e; } //Throws TypeError if index is not found
+		
 		//Revert coordinates of room to pixel coordinates
 		let point = [database.RNdata[room]["RoomX"], database.RNdata[room]["RoomY"]];
 		point[0] = parseFloat(point[0])*this.imgSize;
@@ -444,13 +461,14 @@ var directionsData = {
 					"X1": point[0]/this.imgSize,
 					"Y1": point[1]/this.imgSize,
 					"X2": intersectPoint["x"]/this.imgSize,
-					"Y2": intersectPoint["y"]/this.imgSize
-					};
+					"Y2": intersectPoint["y"]/this.imgSize,
+					"Hallway": i
+				};
 			}
 		}
+		
 		//If the line has not intersected a hallway line, something has gone wrong on the script side.
-		console.log("Entry Line for room " + room + " could not be found.");
-		return false;
+		throw Intersect404Error("Entry Line for room " + room + " could not be found.");
 	},
 	
 	
@@ -486,33 +504,205 @@ var directionsData = {
 	},
 	
 	
-	AddNewPath: function(roomA, roomB) {
-		//Convert room number strings into percentage coordinates
-		//Still don't know if we need these lines, I'm keeping them cuz they're tedious to type.
-		//let pointA = [database.RNdata[roomA]["RoomX"], database.RNdata[roomA]["RoomY"]];
-		//let pointB = [database.RNdata[roomB]["RoomX"], database.RNdata[roomB]["RoomY"]];
-		
-		//Calculate the line to be from the point coordinate to the intersect coordinate
-		//TODO Handle when the calculateEntryLine function returns false
-		let intersectLineA = this.calculateEntryLine(roomA);
-		let intersectLineB = this.calculateEntryLine(roomB);
-		
-        //Add the resultant lines to the directionsData["linesToDraw"]
-		this.linesToDraw.push(intersectLineA);
-		this.linesToDraw.push(intersectLineB);
-
-		//---- At this point, there should be two line segments drawn into the hallway, from room A and from room B.
-
-		//Starting with the hallway line that pointA intersects:
-		
-		//If the two rooms share the same hallway line
-			//Just draw a line to the two intersect points, add to directionsData["linesToDraw"]
-		//Else, See which endpoint of the line is closer to pointB's hallway line endpoints
-		//Add the shortest line (between intersect and hallway end) to the directionsData["linesToDraw"]
-		//Repeat (?)
+	getDistance: function(x1, y1, x2, y2) {
+		let distance = Math.sqrt( Math.pow(x2 - x1,2) + Math.pow(y2 - y1,2) );
+		return distance;
 	},
 	
 	
+	getShortestLine: function(pollLine, comparisonLine) {
+		//Takes in two lines, pollLine and comparisonLine, and finds and returns the closest endpoint of the comparisonLine to the pollLine.
+		//Also returns distance.
+		//Endpoint: 1 means the closest endpoint is (X1, Y1). Endpoint: 2 means closest endpoint is (X2, Y2).
+		let dist1 = this.getDistance(pollLine["X1"]*this.imgSize, pollLine["Y1"]*this.imgSize, comparisonLine["X1"]*this.imgSize, comparisonLine["Y1"]*this.imgSize);
+		dist1 += this.getDistance(pollLine["X1"]*this.imgSize, pollLine["Y1"]*this.imgSize, comparisonLine["X2"]*this.imgSize, comparisonLine["Y2"]*this.imgSize);
+		
+		let dist2 = this.getDistance(pollLine["X2"]*this.imgSize, pollLine["Y2"]*this.imgSize, comparisonLine["X1"]*this.imgSize, comparisonLine["Y1"]*this.imgSize);
+		dist2 += this.getDistance(pollLine["X2"]*this.imgSize, pollLine["Y2"]*this.imgSize, comparisonLine["X2"]*this.imgSize, comparisonLine["Y2"]*this.imgSize);
+		
+		if (dist1 == dist2) {
+			return 0;
+		}
+		if (dist1 < dist2) {
+			return 1;
+		}
+		else {
+			return 2;
+		}
+	},
+	
+	AddNewPath: function(roomA, roomB) {
+		let LineA;
+		let LineB;
+		
+		//Calculate the line from the point coordinate to the intersect coordinate
+		try { LineA = this.calculateEntryLine(roomA); }
+		catch(e) {throw e;} //Will throw TypeError or Intersect404Error
+		try { LineB = this.calculateEntryLine(roomB); }
+		catch(e) {throw e;} //Will throw TypeError or Intersect404Error
+		
+        //Add the resultant lines to the directionsData["linesToDraw"]
+		this.linesToDraw.push(LineA);
+		this.linesToDraw.push(LineB);
+
+		//---- At this point, there should be two line segments drawn into the hallway, from room A and from room B.
+		
+		if (LineA["Hallway"] == LineB["Hallway"]) {
+			//Just draw a line to the two intersect points, add to directionsData["linesToDraw"]
+			LineA = {
+				"X1": LineA["X2"],
+				"Y1": LineA["Y2"],
+				"X2": LineB["X2"],
+				"Y2": LineB["Y2"]
+			}
+			this.linesToDraw.push(LineA);
+			return true;
+		}
+		
+		//Else, See which endpoint of the line is closer to pointB's hallway line endpoints
+		//TODO Sometimes, the distance is equal (look at room 132 -> 125). If the distance is equal, draw the line closest to LineB start point.
+		else {
+			let shortest = this.getShortestLine(database.Halldata[LineA["Hallway"]], database.Halldata[LineB["Hallway"]]);
+			
+			if (shortest == 0) {
+				console.log("Shortest = 0");
+				let dist1 = this.getDistance(LineA["X2"], LineA["Y2"], database.Halldata[LineA["Hallway"]]["X1"], database.Halldata[LineA["Hallway"]]["Y1"]);
+				let dist2 = this.getDistance(LineA["X2"], LineA["Y2"], database.Halldata[LineA["Hallway"]]["X2"], database.Halldata[LineA["Hallway"]]["Y2"]);
+				
+				if (dist1 < dist2) {
+					LineA = {
+						"X1": LineA["X2"],
+						"Y1": LineA["Y2"],
+						"X2": parseFloat(database.Halldata[LineA["Hallway"]]["X1"]),
+						"Y2": parseFloat(database.Halldata[LineA["Hallway"]]["Y1"]),
+						"Hallway": LineA["Hallway"]
+					}
+					this.linesToDraw.push(LineA);
+				}
+				else {
+					LineA = {
+						"X1": LineA["X2"],
+						"Y1": LineA["Y2"],
+						"X2": parseFloat(database.Halldata[LineA["Hallway"]]["X2"]),
+						"Y2": parseFloat(database.Halldata[LineA["Hallway"]]["Y2"]),
+						"Hallway": LineA["Hallway"]
+					}
+					this.linesToDraw.push(LineA);
+				}
+			}
+			else if (shortest == 1) {
+				LineA = {
+					"X1": LineA["X2"],
+					"Y1": LineA["Y2"],
+					"X2": parseFloat(database.Halldata[LineA["Hallway"]]["X1"]),
+					"Y2": parseFloat(database.Halldata[LineA["Hallway"]]["Y1"]),
+					"Hallway": LineA["Hallway"]
+				}
+				this.linesToDraw.push(LineA);
+			}
+			else {
+				LineA = {
+					"X1": LineA["X2"],
+					"Y1": LineA["Y2"],
+					"X2": parseFloat(database.Halldata[LineA["Hallway"]]["X2"]),
+					"Y2": parseFloat(database.Halldata[LineA["Hallway"]]["Y2"]),
+					"Hallway": LineA["Hallway"]
+				}
+				this.linesToDraw.push(LineA);
+			}
+		}
+		
+		let intersectHallways = [];
+		for (var c = 0; c < 5; c++) {
+			if (LineA["Hallway"] == LineB["Hallway"]) {
+				//Just draw a line to the two intersect points, add to directionsData["linesToDraw"]
+				LineA = {
+					"X1": LineA["X2"],
+					"Y1": LineA["Y2"],
+					"X2": LineB["X2"],
+					"Y2": LineB["Y2"],
+					"Hallway": LineA["Hallway"]
+				}
+				this.linesToDraw.push(LineA);
+				return true;
+			}
+			
+			intersectHallways = [];
+			//See which hallways are intersecting the endpoint of LineA
+			for (var x = 0; x < database.Halldata.length; x++) {
+				if (x == LineA["Hallway"]) { continue; }
+				else if (database.Halldata[x]["X1"] == LineA["X2"] && database.Halldata[x]["Y1"] == LineA["Y2"]) {
+					let modifiedIndex = database.Halldata[x];
+					modifiedIndex.Hallway = x;
+					intersectHallways.push(modifiedIndex);
+				}
+				else if (database.Halldata[x]["X2"] == LineA["X2"] && database.Halldata[x]["Y2"] == LineA["Y2"]) {
+					intersectHallways.push({
+						"X1": database.Halldata[x]["X2"],
+						"Y1": database.Halldata[x]["Y2"],
+						"X2": database.Halldata[x]["X1"],
+						"Y2": database.Halldata[x]["Y1"],
+						"Hallway": x
+					});
+				}
+			}
+			
+			if (intersectHallways.length == 1) {
+				
+				if (intersectHallways[0]["Hallway"] == LineB["Hallway"]) {
+					//Just draw a line to the two intersect points, add to directionsData["linesToDraw"]
+					LineA = {
+						"X1": intersectHallways[0]["X1"],
+						"Y1": intersectHallways[0]["Y1"],
+						"X2": LineB["X2"],
+						"Y2": LineB["Y2"],
+						"Hallway": intersectHallways[0]["Hallway"]
+					}
+					this.linesToDraw.push(LineA);
+					return true;
+				}
+				else {
+					LineA = intersectHallways[0];
+					this.linesToDraw.push(LineA);
+					continue;
+				}
+			}
+			
+			//For each of the hallways, see which X2,Y2 is closest to LineB's X2, Y2.
+			let shortest = {
+				"Hallway": 0,
+				"Distance": this.getDistance(intersectHallways[0]["X2"], intersectHallways[0]["Y2"], LineB["X2"], LineB["Y2"])
+			}
+			
+			for (var k = 0; k < intersectHallways.length; k++) {
+				let dist = this.getDistance(intersectHallways[k]["X2"], intersectHallways[k]["Y2"], LineB["X2"], LineB["Y2"]);
+				if (dist < shortest["Distance"]) {
+					shortest["Hallway"] = k;
+					shortest["Distance"] = dist;
+				}
+			}
+			
+			//Add that Hallway to be drawn, set LineA equal to that hallway, and continue.
+			LineA = intersectHallways[shortest["Hallway"]];
+			
+			if (LineA["Hallway"] == LineB["Hallway"]) {
+				//Just draw a line to the two intersect points, add to directionsData["linesToDraw"]
+				LineA = {
+					"X1": LineA["X1"],
+					"Y1": LineA["Y1"],
+					"X2": LineB["X2"],
+					"Y2": LineB["Y2"],
+					"Hallway": LineA["Hallway"]
+				}
+				this.linesToDraw.push(LineA);
+				return true;
+			}
+			
+			else { this.linesToDraw.push(LineA); }
+		}
+	},
+	
+
 	DrawDirections: function(canvasElement, img, imgOrigin) {
 		let ele = document.getElementById(canvasElement);
 		let ctx = ele.getContext("2d");
@@ -542,7 +732,11 @@ var directionsData = {
 		}
 		
 		ctx.lineWidth = 3;
-		ctx.strokeStyle="#FF8000";
+		ctx.lineJoin = 'round';
+		ctx.strokeStyle = "#FF8000";
+		ctx.setLineDash([10, 5]);
+		ctx.lineDashOffset = -this.lineOffset;
+		
 		ctx.beginPath();
 		//For each line in directionsData.linesToDraw
 		for (var i = 0; i < this.linesToDraw.length; i++) {
@@ -598,24 +792,24 @@ window.onload = function() {
     var canvas = document.getElementById("Map1Canvas");
     var ctx = canvas.getContext("2d");
 	ctx.boxSizing = "border-box";
-		
+	
     var img = new Image;
 	img.src = 'Images/1stFloorMap.png'
 	
     img.onload = function() {
 		ctx.imageSmoothingEnabled = false;
-		
-		window.setInterval(function() {
+	};	
+	window.setInterval(function() {
 			let imgOrigin = {
 				x: canvas.width / 2 - (canvas.width*MAP_SCALE) / 2,
 				y: canvas.height / 2 - (canvas.width*MAP_SCALE) / 2
 			}
-			
 			ResizeCanvas("Map1Canvas", img, imgOrigin);
 			ResizeCanvas("Map2Canvas", img, imgOrigin);
+			directionsData.lineOffset++;
+			if (directionsData.lineOffset > 14) { directionsData.lineOffset = 0; }
 			directionsData.DrawDirections("Map1Canvas", img, imgOrigin);
-			directionsData.DrawDirections("Map2Canvas", img, imgOrigin);
-		}, 250);
-	};	
+			//directionsData.DrawDirections("Map2Canvas", img, imgOrigin);
+		},  100);
 }; 
 
