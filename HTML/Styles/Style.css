@@ -6,6 +6,11 @@
 }
 
 @font-face {
+	font-family: Star Jedi;
+	src: url(Fonts/Starjedi.ttf);
+}
+
+@font-face {
 	font-family: Asimov;
 	src: url(Fonts/Asimov.otf);
 }
@@ -103,4 +108,17 @@
 	text-decoration: none;
 	font-family: 'arial black';
 	color: white;
+}
+.indexButton {
+  background-color: #2a2b2a;
+  border: 2px solid #ff8000;
+  color: #ff8000;
+  padding: 10px 16px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-family: 'Star Jedi';
+  font-size: 28px;
+  margin: 4px 2px;
+  cursor: pointer;
 }
