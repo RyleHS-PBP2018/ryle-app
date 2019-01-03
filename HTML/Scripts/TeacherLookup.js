@@ -95,12 +95,12 @@ function GetTeacherNameByRoomPeriod(room, period) {
 }
 
 
-//Returns a room number for a specified teacher and period using a database iterator, or N/A if the teacher doesn't have a class.
-//TODO Rename this function and above to better reflect function usage
-function GetValidRoomInfo(iterator, period) {
+//Returns a room number corresponding to an iterator's room number in the specified period.
+function GetPeriodInfoByIterator(iterator, period) {
 	if (database.data[iterator][period] != undefined) {
-		return database.data[iterator][period];
-	} else return "N/A";
+		return database.data[iterator];
+	}
+	else { return "N/A"; }
 }
 
 
@@ -111,7 +111,6 @@ function GetRoomIndex(roomnumber, period, FromTo) {
 	let errmsg = null;
 	
 	if (isNaN(roomnumber)) {
-		console.log(FromTo + " room number is NaN");
 		errmsg =("Please enter a \"" + FromTo + "\" room number.");
 		return {
 			"iterator":iterator,
@@ -126,7 +125,6 @@ function GetRoomIndex(roomnumber, period, FromTo) {
 		DBRoomNumber = DBRoomNumber.replace(/\D/g,''); //Remove the wing letter(s) from the resultant database value
 		
 		if (DBRoomNumber == roomnumber) {
-			console.log("DisplayInfoForDirections: Room Data located!");
 			break;
 		}
 		else if (iterator == database.data.length - 2) { //Catches invalid room numbers (late catch for characters, NaN values, and decimals)
@@ -159,7 +157,7 @@ function CheckErrorBoxes(type) {
 
 
 //Switches the visibility of the Utility tabs when each one is clicked
-function SwitchTab(ElementID) { //TODO Hide ErrorLog and reset its content when switching tabs
+function SwitchTab(ElementID) {
 	//If element specified is not already visible
 	if (document.getElementById(ElementID + "LookupTab").style.display != "block") {
 		
@@ -186,7 +184,7 @@ function SwitchTab(ElementID) { //TODO Hide ErrorLog and reset its content when 
 }
 
 
-//Freeware from W3Schools.com. Adds autocomplete functionality to a specified text box based on a database
+//Freeware from W3Schools.com. Adds autocomplete functionality to a specified text box (inp) based on a database (arr)
 function AddAutocomplete(inp, arr) {
   /*the autocomplete function takes two arguments,
   the text field element and an array of possible autocompleted values:*/
@@ -286,6 +284,7 @@ document.addEventListener("click", function (e) {
 
 
 //Adds ENTER key functionality to text boxes for smoother user experience
+//
 function appendEnterHandlers(itemid) {
 	let buttonid = undefined;
 	let ele = document.getElementById(itemid);
@@ -394,7 +393,7 @@ var directionsData = {
 		if (this.fromRoom != undefined && this.toRoom != undefined) {
 			this.ClearPaths();
 			this.AddNewPath(this.fromRoom, this.toRoom);
-			console.log(this.linesToDraw);
+			//console.log(this.linesToDraw);
 		}
 	},
 	
@@ -447,7 +446,7 @@ var directionsData = {
 			
 			//intersectPoint will be:
 			//If the line intersects: an object in the form of {"x": pixel coordinate, "y": pixel coordinate}
-			//Else: false
+			//Otherwise an Intersect404Error will be thrown.
 			let intersectPoint = this.getIntersect(
 			intersectLine[0], intersectLine[1],
 			intersectLine[2], intersectLine[3],
@@ -531,6 +530,7 @@ var directionsData = {
 		}
 	},
 	
+	
 	AddNewPath: function(roomA, roomB) {
 		let LineA;
 		let LineB;
@@ -543,7 +543,12 @@ var directionsData = {
 		
         //Add the resultant lines to the directionsData["linesToDraw"]
 		this.linesToDraw.push(LineA);
-		this.linesToDraw.push(LineB);
+		this.linesToDraw.push({
+			"X1": LineB["X2"],
+			"Y1": LineB["Y2"],
+			"X2": LineB["X1"],
+			"Y2": LineB["Y1"]
+		});
 
 		//---- At this point, there should be two line segments drawn into the hallway, from room A and from room B.
 		
@@ -559,13 +564,12 @@ var directionsData = {
 			return true;
 		}
 		
-		//Else, See which endpoint of the line is closer to pointB's hallway line endpoints
-		//TODO Sometimes, the distance is equal (look at room 132 -> 125). If the distance is equal, draw the line closest to LineB start point.
+		//Else, Draw the LineA endpoint closest to PointB
 		else {
 			let shortest = this.getShortestLine(database.Halldata[LineA["Hallway"]], database.Halldata[LineB["Hallway"]]);
 			
 			if (shortest == 0) {
-				console.log("Shortest = 0");
+				//console.log("Shortest = 0");
 				let dist1 = this.getDistance(LineA["X2"], LineA["Y2"], database.Halldata[LineA["Hallway"]]["X1"], database.Halldata[LineA["Hallway"]]["Y1"]);
 				let dist2 = this.getDistance(LineA["X2"], LineA["Y2"], database.Halldata[LineA["Hallway"]]["X2"], database.Halldata[LineA["Hallway"]]["Y2"]);
 				
@@ -612,8 +616,9 @@ var directionsData = {
 			}
 		}
 		
+		//Gets all hallways that LineA is intersecting at point (X2, Y2)
 		let intersectHallways = [];
-		for (var c = 0; c < 5; c++) {
+		for (var c = 0; c < 10; c++) {
 			if (LineA["Hallway"] == LineB["Hallway"]) {
 				//Just draw a line to the two intersect points, add to directionsData["linesToDraw"]
 				LineA = {
@@ -667,15 +672,32 @@ var directionsData = {
 					continue;
 				}
 			}
+
+			for (let hallway of intersectHallways) {
+				if (hallway["Hallway"] == LineB["Hallway"]) {
+					LineA = {
+						"X1": LineA["X2"],
+						"Y1": LineA["Y2"],
+						"X2": LineB["X2"],
+						"Y2": LineB["Y2"],
+						"Hallway": LineB["Hallway"]
+					}
+					this.linesToDraw.push(LineA);
+					return true;
+				}
+			}
 			
 			//For each of the hallways, see which X2,Y2 is closest to LineB's X2, Y2.
 			let shortest = {
 				"Hallway": 0,
-				"Distance": this.getDistance(intersectHallways[0]["X2"], intersectHallways[0]["Y2"], LineB["X2"], LineB["Y2"])
+				"Distance": this.getDistance(intersectHallways[0]["X2"], intersectHallways[0]["Y2"], LineB["X2"], LineB["Y2"]) +
+					this.getDistance(intersectHallways[0]["X1"], intersectHallways[0]["Y1"], intersectHallways[0]["X2"], intersectHallways[0]["Y2"])
 			}
 			
 			for (var k = 0; k < intersectHallways.length; k++) {
-				let dist = this.getDistance(intersectHallways[k]["X2"], intersectHallways[k]["Y2"], LineB["X2"], LineB["Y2"]);
+				let dist = this.getDistance(intersectHallways[k]["X2"], intersectHallways[k]["Y2"], LineB["X2"], LineB["Y2"]) +
+					this.getDistance(intersectHallways[k]["X1"], intersectHallways[k]["Y1"], intersectHallways[k]["X2"], intersectHallways[k]["Y2"]);
+					
 				if (dist < shortest["Distance"]) {
 					shortest["Hallway"] = k;
 					shortest["Distance"] = dist;
@@ -710,34 +732,43 @@ var directionsData = {
 		this.imgSize = imgSize
 		
 		//Draws a red box on the "from" room
-		ctx.fillStyle = 'red';
-		if (this.fromRoom != undefined) {
+		ctx.beginPath();
+		ctx.strokeStyle = '#FF8000';
+		ctx.lineWidth = 2;
+		//ctx.setLineDash([10, 5]);
+		//ctx.lineDashOffset = -this.lineOffset;
+		ctx.fillStyle = 'black';
+		
+		if (this.fromRoom != undefined && database.RNdata[this.fromRoom] != undefined) {
 			try {
-				ctx.fillRect((imgOrigin.x + database.RNdata[this.fromRoom]["RoomX"]*this.imgSize), (imgOrigin.y + database.RNdata[this.fromRoom]["RoomY"]*this.imgSize), 6, 6);
+				ctx.fillRect(imgOrigin.x + database.RNdata[this.fromRoom]["RoomX"]*this.imgSize - 6, imgOrigin.y + database.RNdata[this.fromRoom]["RoomY"]*this.imgSize - 6, 12, 12);
+				ctx.rect(imgOrigin.x + database.RNdata[this.fromRoom]["RoomX"]*this.imgSize - 5, imgOrigin.y + database.RNdata[this.fromRoom]["RoomY"]*this.imgSize - 5, 10, 10);
 			}
 			catch(err) {
-				console.log(err.message);
+				throw err;
 			}
 		}
 		
 		//Draws a green box on the "to" room
-		ctx.fillStyle = 'green';
-		if (this.toRoom != undefined) {
+		if (this.toRoom != undefined && database.RNdata[this.fromRoom] != undefined) {
 			try {
-				ctx.fillRect(imgOrigin.x + database.RNdata[this.toRoom]["RoomX"]*this.imgSize, imgOrigin.y + database.RNdata[this.toRoom]["RoomY"]*this.imgSize, 6, 6);
+				ctx.fillRect(imgOrigin.x + database.RNdata[this.toRoom]["RoomX"]*this.imgSize - 6, imgOrigin.y + database.RNdata[this.toRoom]["RoomY"]*this.imgSize - 6, 12, 12);
+				ctx.rect(imgOrigin.x + database.RNdata[this.toRoom]["RoomX"]*this.imgSize - 5, imgOrigin.y + database.RNdata[this.toRoom]["RoomY"]*this.imgSize - 5, 10, 10);
 			}
 			catch(err) {
-				console.log(err.message);
+				throw err;
 			}
 		}
+		ctx.stroke();
 		
+		ctx.beginPath();
 		ctx.lineWidth = 3;
 		ctx.lineJoin = 'round';
-		ctx.strokeStyle = "#FF8000";
+		ctx.strokeStyle = '#8cff00';
 		ctx.setLineDash([10, 5]);
 		ctx.lineDashOffset = -this.lineOffset;
 		
-		ctx.beginPath();
+		
 		//For each line in directionsData.linesToDraw
 		for (var i = 0; i < this.linesToDraw.length; i++) {
 			//Add the line to the path
@@ -798,7 +829,8 @@ window.onload = function() {
 	
     img.onload = function() {
 		ctx.imageSmoothingEnabled = false;
-	};	
+	};
+	
 	window.setInterval(function() {
 			let imgOrigin = {
 				x: canvas.width / 2 - (canvas.width*MAP_SCALE) / 2,
