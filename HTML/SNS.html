@@ -1,16 +1,38 @@
-<!DOCTYPE html> <!-- This is what a comment looks like. -->
+<!DOCTYPE html>
+<html class="root" id="root">
+    <head>
+        <meta charset="UTF-8" name="google-signin-client_id" content="773329347918-be90ir6f763sui8habenjcl72vmbtm3j.apps.googleusercontent.com">
+        <title>Ryle SNS</title>
+        <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+        <link rel="stylesheet" type="text/css" href="Styles/style2.css">
+    </head>
+	<body class = "backGroundSNS">
+            <div class = "topLayer"><img src="Images/rylesnslogo.jpg" alt="sns logo" width="100" height="100"><span class="ryleSNSTitle">Ryle SNS</span></div>
 
-<html> <!-- This is where a browser starts reading, don't put anything outside of this. -->
-	<head> <!-- This is where you put your links (import statements), page titles, and scripts. -->
-		<meta charset="UTF-8"/> <!-- Standard character encoding -->
-		<title>Ryle Social Network</title> <!-- Sets the top-of-page title -->
-		
-		<link rel="shortcut icon" href="Images/Ryle Crest.jpeg"/> <!-- Sets top-of-page image -->
-		<link rel= "stylesheet" type= "text/css" href="Styles/Style.css"/> <!-- Imports style sheet -->
-	
-	</head> <!-- Make sure you close all tags with the </tag> format -->
-	
-	<body> <!-- This is where you put the visible part of your page -->
-		<h1>I AM UPDATING B</h1>		
-	</body>
+            <div class="tab">
+                <button class="tablinks" onclick="openGrade(event, 'General')" id="grade_00">General</button>
+                <button class="tablinks" onclick="openGrade(event, 'Freshman')" id="grade_09">Freshman</button>
+                <button class="tablinks" onclick="openGrade(event, 'Sophomore')" id="grade_10">Sophomore</button>
+                <button class="tablinks" onclick="openGrade(event, 'Junior')" id="grade_11">Junior</button>
+                <button class="tablinks" onclick="openGrade(event, 'Senior')" id="grade_12">Senior</button>
+                <button class="tablinks" style="float: right;" onclick="openLinksCanvas()">Canvas</button>
+                <button onclick="openLinksIC()" class="tablinks" style="float: right;">Infinite Campus</button>
+                <button onclick="openLinksOffice()" class="tablinks" style="float: right;">Office 365</button>
+            </div>
+            
+            <div class="chatContainer">
+            <div class="backGroundUsers" id="usercontainer"></div>    
+            <div class="backGroundMessage" id="messagecontainer">
+                <div class="messageContainer" id="messageboxcontainer"></div>
+                <div class="chatBox" id="chatbox">
+                        <textarea class="userChatBox" id="chatbox_text" name="chatbox_text" placeholder="Enter your message.. :D"></textarea>
+                </div>
+            </div>
+            </div>
+    </body>
+    
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <script src="Scripts/script2.js"></script>
+    <script src="Scripts/script.js"></script>
 </html>
