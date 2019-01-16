@@ -50,13 +50,13 @@ function DisplayInfoByTeacher() {
 			document.getElementById("TLDisplayName").innerHTML = document.getElementById("TeacherLookupInput").value;
 			
 			//Display room info
-			document.getElementById("TLPeriod1").innerHTML = "1st: " + GetValidRoomInfo(iterator, "1st");
-			document.getElementById("TLPeriod2").innerHTML = "2nd: " + GetValidRoomInfo(iterator, "2nd");
-			document.getElementById("TLPeriod3").innerHTML = "3rd: " + GetValidRoomInfo(iterator, "3rd");
-			document.getElementById("TLPeriodRAP").innerHTML = "RAP: " + GetValidRoomInfo(iterator, "RAP");
-			document.getElementById("TLPeriod4").innerHTML = "4th: " + GetValidRoomInfo(iterator, "4th");
-			document.getElementById("TLPeriod5").innerHTML = "5th: " + GetValidRoomInfo(iterator, "5th");
-			document.getElementById("TLPeriod6").innerHTML = "6th: " + GetValidRoomInfo(iterator, "6th");
+			document.getElementById("TLPeriod1").innerHTML = "1st: " + GetPeriodInfoByIterator(iterator, "1st");
+			document.getElementById("TLPeriod2").innerHTML = "2nd: " + GetPeriodInfoByIterator(iterator, "2nd");
+			document.getElementById("TLPeriod3").innerHTML = "3rd: " + GetPeriodInfoByIterator(iterator, "3rd");
+			document.getElementById("TLPeriodRAP").innerHTML = "RAP: " + GetPeriodInfoByIterator(iterator, "RAP");
+			document.getElementById("TLPeriod4").innerHTML = "4th: " + GetPeriodInfoByIterator(iterator, "4th");
+			document.getElementById("TLPeriod5").innerHTML = "5th: " + GetPeriodInfoByIterator(iterator, "5th");
+			document.getElementById("TLPeriod6").innerHTML = "6th: " + GetPeriodInfoByIterator(iterator, "6th");
 			return true;
 		}
 		iterator++;
@@ -98,7 +98,7 @@ function GetTeacherNameByRoomPeriod(room, period) {
 //Returns a room number corresponding to an iterator's room number in the specified period.
 function GetPeriodInfoByIterator(iterator, period) {
 	if (database.data[iterator][period] != undefined) {
-		return database.data[iterator];
+		return database.data[iterator][period];
 	}
 	else { return "N/A"; }
 }
@@ -335,7 +335,7 @@ function ResizeCanvas(canvasElement,img, imgOrigin) {
 		imgOrigin.y, //Y position
 		ele.width*MAP_SCALE, //Width
 		ele.width*MAP_SCALE //Height
-		);
+	);
 }
 
 
@@ -350,7 +350,7 @@ Intersect404Error.prototype = new Error();
 
 //Constants Declarations
 	//Specifies the percent of the width of the canvas elements that the maps will take up. (0.01 < MAP_SCALE < 1.00)
-	var MAP_SCALE = 0.8;
+	const MAP_SCALE = 0.8;
 	
 //End of Constants Declarations
 
@@ -399,18 +399,26 @@ var directionsData = {
 	
 	
 	calculateEntryLine: function(room) {
-		//Get coordinates of room in percentage
-		try { database.RNdata[room]["RoomX"]; }
-		catch(e) { throw e; } //Throws TypeError if index is not found
+		//If room var starts with "Stair", instead search through stair coordinates on same floor.
+		let roomObject;
+		if (room[0] == 'S') {
+			try { roomObject = database.RNdata[room]; }
+			catch(e) { throw e; } //Throws TypeError if index is not found
+		}
+		//Else search RNdata.
+		else {
+			try { roomObject = database.RNdata[room]; }
+			catch(e) { throw e; } //Throws TypeError if index is not found
+		}
 		
 		//Revert coordinates of room to pixel coordinates
-		let point = [database.RNdata[room]["RoomX"], database.RNdata[room]["RoomY"]];
+		let point = [roomObject["RoomX"], roomObject["RoomY"]];
 		point[0] = parseFloat(point[0])*this.imgSize;
 		point[1] = parseFloat(point[1])*this.imgSize;
 		
 		//Create a line that has a length = 5% of imgSize in the direction of ExitDirection
 		let intersectLine = undefined;
-		switch(database.RNdata[room]["ExitDirection"]) {
+		switch(roomObject["ExitDirection"]) {
 			case "Up":
 				intersectLine = [point[0], point[1], point[0], point[1] - this.imgSize*0.1];
 				break;
