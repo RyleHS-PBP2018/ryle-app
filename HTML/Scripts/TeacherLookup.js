@@ -350,7 +350,7 @@ Intersect404Error.prototype = new Error();
 
 //Constants Declarations
 	//Specifies the percent of the width of the canvas elements that the maps will take up. (0.01 < MAP_SCALE < 1.00)
-	const MAP_SCALE = 0.8;
+	const MAP_SCALE = 0.5;
 	
 //End of Constants Declarations
 
@@ -392,6 +392,9 @@ var directionsData = {
 		
 		if (this.fromRoom != undefined && this.toRoom != undefined) {
 			this.ClearPaths();
+			//Check which maps are needed
+			//set mapsToDraw accordingly
+			
 			this.AddNewPath(this.fromRoom, this.toRoom);
 			//console.log(this.linesToDraw);
 		}
@@ -743,8 +746,6 @@ var directionsData = {
 		ctx.beginPath();
 		ctx.strokeStyle = '#FF8000';
 		ctx.lineWidth = 2;
-		//ctx.setLineDash([10, 5]);
-		//ctx.lineDashOffset = -this.lineOffset;
 		ctx.fillStyle = 'black';
 		
 		if (this.fromRoom != undefined && database.RNdata[this.fromRoom] != undefined) {
@@ -845,11 +846,10 @@ window.onload = function() {
 				y: canvas.height / 2 - (canvas.width*MAP_SCALE) / 2
 			}
 			ResizeCanvas("Map1Canvas", img, imgOrigin);
-			ResizeCanvas("Map2Canvas", img, imgOrigin);
+			//ResizeCanvas("Map2Canvas", img, imgOrigin);
 			directionsData.lineOffset++;
 			if (directionsData.lineOffset > 14) { directionsData.lineOffset = 0; }
 			directionsData.DrawDirections("Map1Canvas", img, imgOrigin);
-			//directionsData.DrawDirections("Map2Canvas", img, imgOrigin);
-		},  100);
+		},  /* Refresh rate in ms -> */ 100);
 }; 
 
