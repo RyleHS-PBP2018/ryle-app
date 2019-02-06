@@ -284,7 +284,6 @@ document.addEventListener("click", function (e) {
 
 
 //Adds ENTER key functionality to text boxes for smoother user experience
-//
 function appendEnterHandlers(itemid) {
 	let buttonid = undefined;
 	let ele = document.getElementById(itemid);
@@ -322,21 +321,13 @@ function appendEnterHandlers(itemid) {
 }
 
 
-//Resizes a canvas element to the size of its parent element
-function ResizeCanvas(canvasElement,img, imgOrigin) {
-	let ele = document.getElementById(canvasElement);
-	let parent = ele.parentElement;
-	let ctx = ele.getContext("2d");
-	ele.width = parent.clientWidth;
-	ele.height = parent.clientHeight;
-	ctx.drawImage(
-		img, //Image variable
-		imgOrigin.x, //X position
-		imgOrigin.y, //Y position
-		ele.width*MAP_SCALE, //Width
-		ele.width*MAP_SCALE //Height
-	);
+function DEBUGDrawAllLines() {
+	directionsData.ClearPaths();
+	for (var x of database.Halldata) {
+		directionsData.linesToDraw.push(x);
+	}
 }
+
 
 
 // --------------- Seperation Between function definitions exception definitions ----------------
@@ -360,6 +351,7 @@ var database = {
     data:undefined, //Holds teacher info (which room they're in throughout the day)
 	RNdata:undefined, //Holds room coordinate information
 	Halldata:undefined, //Holds hallway coordinate information
+	DynMapCoords:undefined,
 	teachernames: [], //This array is used exclusively as an input for autocomplete
 	
 	//Initializes the teachernames array on file load
@@ -382,60 +374,91 @@ var directionsData = {
 	//MUST be an object with attributes "X1", "X2", "Y1", "Y2" in percent coords
 	linesToDraw:[], 
 	
+	//Specifies which maps are to be drawn on canvas.
+	mapsToDraw:{},
+	
 	
 	StartPathfinding : function() { //Initiates directions pathfinding, requires input in the directions text boxes
+		//First, get the values from the input boxes.
+		//TODO: Validate that input is a valid number or room name
 		this.fromRoom = document.getElementById("FromRoomNumber").value;
 		this.toRoom = document.getElementById("ToRoomNumber").value;
+		
+		//TODO fix these two functions to comprehend Band and Gyms
 		DisplayInfoForDirections('To');
 		DisplayInfoForDirections('From');
 		CheckErrorBoxes('Directions');
 		
 		if (this.fromRoom != undefined && this.toRoom != undefined) {
-			this.ClearPaths();
-			//Check which maps are needed
-			//set mapsToDraw accordingly
 			
-			this.AddNewPath(this.fromRoom, this.toRoom);
-			//console.log(this.linesToDraw);
+			this.ClearPaths();
+			this.mapsToDraw = {};
+			//Check which maps are needed
+			
+			if (this.getRoomMap(this.toRoom) == this.getRoomMap(this.fromRoom)) {
+				//Make this a switch statement?
+				
+				if (this.getRoomMap(this.fromRoom) == "FirstFloorAcademic") {
+					this.mapsToDraw = {"FirstFloorAcademic" : { "Coords" : database.DynMapCoords["1MS"]["S1"], "Lines" : []}};
+					this.AddNewPath(this.fromRoom, this.toRoom, "FirstFloorAcademic");
+					
+				}
+				else if (this.getRoomMap(this.fromRoom) == "FirstFloorActivity") {
+					this.mapsToDraw = {"FirstFloorActivity" : { "Coords" : database.DynMapCoords["1MR"]["R1"], "Lines" : []}};
+					this.AddNewPath(this.fromRoom, this.toRoom, "FirstFloorActivity");
+				}
+			}
+				//Additional if statements to find out if a third map is needed
+			
+		}
+	},
+	
+	getRoomMap : function(room) { //Returns the map that a specified room is on
+		if (room in database.RNdata["FirstFloorActivity"]) {
+			return "FirstFloorActivity";
+		}
+		else if (room in database.RNdata["FirstFloorAcademic"]) {
+			return "FirstFloorAcademic";
+		}
+		else { 
+			console.log(room + " is in an unknown map. Check directionsData.getRoomMap");
+			return null;
 		}
 	},
 	
 	
-	calculateEntryLine: function(room) {
+	calculateEntryLine: function(room, map) {
 		//If room var starts with "Stair", instead search through stair coordinates on same floor.
+		
 		let roomObject;
-		if (room[0] == 'S') {
-			try { roomObject = database.RNdata[room]; }
-			catch(e) { throw e; } //Throws TypeError if index is not found
-		}
-		//Else search RNdata.
-		else {
-			try { roomObject = database.RNdata[room]; }
-			catch(e) { throw e; } //Throws TypeError if index is not found
-		}
+		
+		try { roomObject = database.RNdata[map][room]; }
+		catch(e) { throw e; } //Throws TypeError if index is not found
 		
 		//Revert coordinates of room to pixel coordinates
 		let point = [roomObject["RoomX"], roomObject["RoomY"]];
-		point[0] = parseFloat(point[0])*this.imgSize;
-		point[1] = parseFloat(point[1])*this.imgSize;
+		point[0] = parseFloat(point[0])*this.mapsToDraw[map]["Coords"]["Width"];
+		point[1] = parseFloat(point[1])*this.mapsToDraw[map]["Coords"]["Height"];
+		
+		
 		
 		//Create a line that has a length = 5% of imgSize in the direction of ExitDirection
 		let intersectLine = undefined;
 		switch(roomObject["ExitDirection"]) {
 			case "Up":
-				intersectLine = [point[0], point[1], point[0], point[1] - this.imgSize*0.1];
+				intersectLine = [point[0], point[1], point[0], point[1] - this.mapsToDraw[map]["Coords"]["Height"]*0.1];
 				break;
 			
 			case "Right":
-				intersectLine = [point[0], point[1], point[0] + this.imgSize*0.1, point[1]];
+				intersectLine = [point[0], point[1], point[0] + this.mapsToDraw[map]["Coords"]["Width"]*0.1, point[1]];
 				break;
 			
 			case "Down":
-				intersectLine = [point[0], point[1], point[0], point[1] + this.imgSize*0.1];
+				intersectLine = [point[0], point[1], point[0], point[1] + this.mapsToDraw[map]["Coords"]["Height"]*0.1];
 				break;
 				
 			case "Left":
-				intersectLine = [point[0], point[1], point[0] - this.imgSize*0.1, point[1]];
+				intersectLine = [point[0], point[1], point[0] - this.mapsToDraw[map]["Coords"]["Width"]*0.1, point[1]];
 				break;
 			
 			default:
@@ -446,14 +469,14 @@ var directionsData = {
 		
 		
 		//Loop to find which hallway line is being intersected and get intersection point
-		for (var i = 0; i < database.Halldata.length; i++) {
+		for (var i = 0; i < database.Halldata[map].length; i++) {
 			//For each hallway, set up this object, which holds coordinates in pixel measurements
 			let objectCoords = {"X1":undefined, "Y1":undefined, "X2":undefined, "Y2":undefined};
 			
-			objectCoords["X1"] = parseFloat(database.Halldata[i]["X1"])*this.imgSize;
-			objectCoords["Y1"] = parseFloat(database.Halldata[i]["Y1"])*this.imgSize;
-			objectCoords["X2"] = parseFloat(database.Halldata[i]["X2"])*this.imgSize;
-			objectCoords["Y2"] = parseFloat(database.Halldata[i]["Y2"])*this.imgSize;
+			objectCoords["X1"] = parseFloat(database.Halldata[map][i]["X1"])*this.mapsToDraw[map]["Coords"]["Width"];
+			objectCoords["Y1"] = parseFloat(database.Halldata[map][i]["Y1"])*this.mapsToDraw[map]["Coords"]["Height"];
+			objectCoords["X2"] = parseFloat(database.Halldata[map][i]["X2"])*this.mapsToDraw[map]["Coords"]["Width"];
+			objectCoords["Y2"] = parseFloat(database.Halldata[map][i]["Y2"])*this.mapsToDraw[map]["Coords"]["Height"];
 			
 			//intersectPoint will be:
 			//If the line intersects: an object in the form of {"x": pixel coordinate, "y": pixel coordinate}
@@ -464,14 +487,17 @@ var directionsData = {
 			objectCoords["X1"], objectCoords["Y1"],
 			objectCoords["X2"], objectCoords["Y2"]);
 			
+			
+			
 			//If the intersectPoint is not false, the intersect has been found
 			if (intersectPoint) {
+				
 				//Return the line that spans from the room coordinate to the intersect coordinate, but in percentage coordinates
 				return {
-					"X1": point[0]/this.imgSize,
-					"Y1": point[1]/this.imgSize,
-					"X2": intersectPoint["x"]/this.imgSize,
-					"Y2": intersectPoint["y"]/this.imgSize,
+					"X1": point[0]/this.mapsToDraw[map]["Coords"]["Width"],
+					"Y1": point[1]/this.mapsToDraw[map]["Coords"]["Height"],
+					"X2": intersectPoint["x"]/this.mapsToDraw[map]["Coords"]["Width"],
+					"Y2": intersectPoint["y"]/this.mapsToDraw[map]["Coords"]["Height"],
 					"Hallway": i
 				};
 			}
@@ -541,25 +567,27 @@ var directionsData = {
 		}
 	},
 	
-	
-	AddNewPath: function(roomA, roomB) {
+	AddNewPath: function(roomA, roomB, map) {
 		let LineA;
 		let LineB;
 		
 		//Calculate the line from the point coordinate to the intersect coordinate
-		try { LineA = this.calculateEntryLine(roomA); }
+		
+		try { LineA = this.calculateEntryLine(roomA, map); }
 		catch(e) {throw e;} //Will throw TypeError or Intersect404Error
-		try { LineB = this.calculateEntryLine(roomB); }
+		try { LineB = this.calculateEntryLine(roomB, map); }
 		catch(e) {throw e;} //Will throw TypeError or Intersect404Error
 		
-        //Add the resultant lines to the directionsData["linesToDraw"]
-		this.linesToDraw.push(LineA);
-		this.linesToDraw.push({
+		
+        //Add the resultant lines to the corresponding map Lines
+		this.mapsToDraw[map]["Lines"].push(LineA);
+		this.mapsToDraw[map]["Lines"].push({
 			"X1": LineB["X2"],
 			"Y1": LineB["Y2"],
 			"X2": LineB["X1"],
 			"Y2": LineB["Y1"]
 		});
+		
 
 		//---- At this point, there should be two line segments drawn into the hallway, from room A and from room B.
 		
@@ -571,59 +599,73 @@ var directionsData = {
 				"X2": LineB["X2"],
 				"Y2": LineB["Y2"]
 			}
-			this.linesToDraw.push(LineA);
+			this.mapsToDraw[map]["Lines"].push(LineA);
+			
 			return true;
 		}
 		
+		
 		//Else, Draw the LineA endpoint closest to PointB
 		else {
-			let shortest = this.getShortestLine(database.Halldata[LineA["Hallway"]], database.Halldata[LineB["Hallway"]]);
+			
+			let shortest = this.getShortestLine(database.Halldata[map][LineA["Hallway"]], database.Halldata[map][LineB["Hallway"]]);
 			
 			if (shortest == 0) {
-				//console.log("Shortest = 0");
-				let dist1 = this.getDistance(LineA["X2"], LineA["Y2"], database.Halldata[LineA["Hallway"]]["X1"], database.Halldata[LineA["Hallway"]]["Y1"]);
-				let dist2 = this.getDistance(LineA["X2"], LineA["Y2"], database.Halldata[LineA["Hallway"]]["X2"], database.Halldata[LineA["Hallway"]]["Y2"]);
+				
+				let dist1 = this.getDistance(
+					LineA["X2"],
+					LineA["Y2"],
+					database.Halldata[map][LineA["Hallway"]]["X1"],
+					database.Halldata[map][LineA["Hallway"]]["Y1"]
+					);
+					
+				let dist2 = this.getDistance(
+					LineA["X2"],
+					LineA["Y2"],
+					database.Halldata[map][LineA["Hallway"]]["X2"],
+					database.Halldata[map][LineA["Hallway"]]["Y2"]
+					);
 				
 				if (dist1 < dist2) {
 					LineA = {
 						"X1": LineA["X2"],
 						"Y1": LineA["Y2"],
-						"X2": parseFloat(database.Halldata[LineA["Hallway"]]["X1"]),
-						"Y2": parseFloat(database.Halldata[LineA["Hallway"]]["Y1"]),
+						"X2": parseFloat(database.Halldata[map][LineA["Hallway"]]["X1"]),
+						"Y2": parseFloat(database.Halldata[map][LineA["Hallway"]]["Y1"]),
 						"Hallway": LineA["Hallway"]
 					}
-					this.linesToDraw.push(LineA);
+					this.mapsToDraw[map]["Lines"].push(LineA);
 				}
 				else {
 					LineA = {
 						"X1": LineA["X2"],
 						"Y1": LineA["Y2"],
-						"X2": parseFloat(database.Halldata[LineA["Hallway"]]["X2"]),
-						"Y2": parseFloat(database.Halldata[LineA["Hallway"]]["Y2"]),
+						"X2": parseFloat(database.Halldata[map][LineA["Hallway"]]["X2"]),
+						"Y2": parseFloat(database.Halldata[map][LineA["Hallway"]]["Y2"]),
 						"Hallway": LineA["Hallway"]
 					}
-					this.linesToDraw.push(LineA);
+					this.mapsToDraw[map]["Lines"].push(LineA);
 				}
 			}
 			else if (shortest == 1) {
 				LineA = {
 					"X1": LineA["X2"],
 					"Y1": LineA["Y2"],
-					"X2": parseFloat(database.Halldata[LineA["Hallway"]]["X1"]),
-					"Y2": parseFloat(database.Halldata[LineA["Hallway"]]["Y1"]),
+					"X2": parseFloat(database.Halldata[map][LineA["Hallway"]]["X1"]),
+					"Y2": parseFloat(database.Halldata[map][LineA["Hallway"]]["Y1"]),
 					"Hallway": LineA["Hallway"]
 				}
-				this.linesToDraw.push(LineA);
+				this.mapsToDraw[map]["Lines"].push(LineA);
 			}
 			else {
 				LineA = {
 					"X1": LineA["X2"],
 					"Y1": LineA["Y2"],
-					"X2": parseFloat(database.Halldata[LineA["Hallway"]]["X2"]),
-					"Y2": parseFloat(database.Halldata[LineA["Hallway"]]["Y2"]),
+					"X2": parseFloat(database.Halldata[map][LineA["Hallway"]]["X2"]),
+					"Y2": parseFloat(database.Halldata[map][LineA["Hallway"]]["Y2"]),
 					"Hallway": LineA["Hallway"]
 				}
-				this.linesToDraw.push(LineA);
+				this.mapsToDraw[map]["Lines"].push(LineA);
 			}
 		}
 		
@@ -639,25 +681,25 @@ var directionsData = {
 					"Y2": LineB["Y2"],
 					"Hallway": LineA["Hallway"]
 				}
-				this.linesToDraw.push(LineA);
+				this.mapsToDraw[map]["Lines"].push(LineA);
 				return true;
 			}
 			
 			intersectHallways = [];
 			//See which hallways are intersecting the endpoint of LineA
-			for (var x = 0; x < database.Halldata.length; x++) {
+			for (var x = 0; x < database.Halldata[map].length; x++) {
 				if (x == LineA["Hallway"]) { continue; }
-				else if (database.Halldata[x]["X1"] == LineA["X2"] && database.Halldata[x]["Y1"] == LineA["Y2"]) {
-					let modifiedIndex = database.Halldata[x];
+				else if (database.Halldata[map][x]["X1"] == LineA["X2"] && database.Halldata[map][x]["Y1"] == LineA["Y2"]) {
+					let modifiedIndex = database.Halldata[map][x];
 					modifiedIndex.Hallway = x;
 					intersectHallways.push(modifiedIndex);
 				}
-				else if (database.Halldata[x]["X2"] == LineA["X2"] && database.Halldata[x]["Y2"] == LineA["Y2"]) {
+				else if (database.Halldata[map][x]["X2"] == LineA["X2"] && database.Halldata[map][x]["Y2"] == LineA["Y2"]) {
 					intersectHallways.push({
-						"X1": database.Halldata[x]["X2"],
-						"Y1": database.Halldata[x]["Y2"],
-						"X2": database.Halldata[x]["X1"],
-						"Y2": database.Halldata[x]["Y1"],
+						"X1": database.Halldata[map][x]["X2"],
+						"Y1": database.Halldata[map][x]["Y2"],
+						"X2": database.Halldata[map][x]["X1"],
+						"Y2": database.Halldata[map][x]["Y1"],
 						"Hallway": x
 					});
 				}
@@ -674,12 +716,13 @@ var directionsData = {
 						"Y2": LineB["Y2"],
 						"Hallway": intersectHallways[0]["Hallway"]
 					}
-					this.linesToDraw.push(LineA);
+					this.mapsToDraw[map]["Lines"].push(LineA);
+					
 					return true;
 				}
 				else {
 					LineA = intersectHallways[0];
-					this.linesToDraw.push(LineA);
+					this.mapsToDraw[map]["Lines"].push(LineA);
 					continue;
 				}
 			}
@@ -693,7 +736,7 @@ var directionsData = {
 						"Y2": LineB["Y2"],
 						"Hallway": LineB["Hallway"]
 					}
-					this.linesToDraw.push(LineA);
+					this.mapsToDraw[map]["Lines"].push(LineA);
 					return true;
 				}
 			}
@@ -727,49 +770,37 @@ var directionsData = {
 					"Y2": LineB["Y2"],
 					"Hallway": LineA["Hallway"]
 				}
-				this.linesToDraw.push(LineA);
+				this.mapsToDraw[map]["Lines"].push(LineA);
 				return true;
 			}
 			
-			else { this.linesToDraw.push(LineA); }
+			else { this.mapsToDraw[map]["Lines"].push(LineA); }
 		}
 	},
 	
-
-	DrawDirections: function(canvasElement, img, imgOrigin) {
+	
+	DrawMaps: function(canvasElement, mapImages) {
 		let ele = document.getElementById(canvasElement);
+		let parent = ele.parentElement;
 		let ctx = ele.getContext("2d");
-		let imgSize = ele.width*MAP_SCALE;
-		this.imgSize = imgSize
 		
-		//Draws a red box on the "from" room
-		ctx.beginPath();
-		ctx.strokeStyle = '#FF8000';
-		ctx.lineWidth = 2;
-		ctx.fillStyle = 'black';
+		//Resize Canvas Element
+		ele.width = parent.clientWidth;
+		ele.height = parent.clientHeight;
 		
-		if (this.fromRoom != undefined && database.RNdata[this.fromRoom] != undefined) {
-			try {
-				ctx.fillRect(imgOrigin.x + database.RNdata[this.fromRoom]["RoomX"]*this.imgSize - 6, imgOrigin.y + database.RNdata[this.fromRoom]["RoomY"]*this.imgSize - 6, 12, 12);
-				ctx.rect(imgOrigin.x + database.RNdata[this.fromRoom]["RoomX"]*this.imgSize - 5, imgOrigin.y + database.RNdata[this.fromRoom]["RoomY"]*this.imgSize - 5, 10, 10);
-			}
-			catch(err) {
-				throw err;
-			}
+		
+		//For every map in mapsToDraw
+		for (map in this.mapsToDraw) {
+			//Draw map
+			ctx.drawImage(
+				mapImages[map], //Image variable
+				this.mapsToDraw[map]["Coords"]["X"]*ele.width, //X position
+				this.mapsToDraw[map]["Coords"]["Y"]*ele.height, //Y position
+				this.mapsToDraw[map]["Coords"]["Width"]*ele.width, //Width
+				this.mapsToDraw[map]["Coords"]["Height"]*ele.width //Height
+			);
 		}
-		
-		//Draws a green box on the "to" room
-		if (this.toRoom != undefined && database.RNdata[this.fromRoom] != undefined) {
-			try {
-				ctx.fillRect(imgOrigin.x + database.RNdata[this.toRoom]["RoomX"]*this.imgSize - 6, imgOrigin.y + database.RNdata[this.toRoom]["RoomY"]*this.imgSize - 6, 12, 12);
-				ctx.rect(imgOrigin.x + database.RNdata[this.toRoom]["RoomX"]*this.imgSize - 5, imgOrigin.y + database.RNdata[this.toRoom]["RoomY"]*this.imgSize - 5, 10, 10);
-			}
-			catch(err) {
-				throw err;
-			}
-		}
-		ctx.stroke();
-		
+			
 		ctx.beginPath();
 		ctx.lineWidth = 3;
 		ctx.lineJoin = 'round';
@@ -777,17 +808,29 @@ var directionsData = {
 		ctx.setLineDash([10, 5]);
 		ctx.lineDashOffset = -this.lineOffset;
 		
-		
-		//For each line in directionsData.linesToDraw
-		for (var i = 0; i < this.linesToDraw.length; i++) {
-			//Add the line to the path
-			ctx.moveTo(imgOrigin.x + this.linesToDraw[i]["X1"]*this.imgSize, imgOrigin.y + this.linesToDraw[i]["Y1"]*this.imgSize);
-			ctx.lineTo(imgOrigin.x + this.linesToDraw[i]["X2"]*this.imgSize, imgOrigin.y + this.linesToDraw[i]["Y2"]*this.imgSize);
+		let imgOrigin;
+		//For every map in mapsToDraw
+		for (map in this.mapsToDraw) {
+			
+			imgOrigin = {
+				"X" : this.mapsToDraw[map]["Coords"]["X"]*ele.width,
+				"Y" : this.mapsToDraw[map]["Coords"]["Y"]*ele.height,
+				"Height" : this.mapsToDraw[map]["Coords"]["Height"]*ele.width,
+				"Width" : this.mapsToDraw[map]["Coords"]["Width"]*ele.width
+			}
+			
+			//Draw Lines
+			for (var i = 0; i < this.mapsToDraw[map]["Lines"].length; i++) {
+				//Add the line to the path
+				ctx.moveTo( imgOrigin.X + this.mapsToDraw[map]["Lines"][i]["X1"]*imgOrigin.Width, imgOrigin.Y + this.mapsToDraw[map]["Lines"][i]["Y1"]*imgOrigin.Height);
+				ctx.lineTo( imgOrigin.X + this.mapsToDraw[map]["Lines"][i]["X2"]*imgOrigin.Width, imgOrigin.Y + this.mapsToDraw[map]["Lines"][i]["Y2"]*imgOrigin.Height);
+			}
 		}
-		//Draw the path
 		ctx.stroke();
 	},
 	
+	
+	//TODO fix.
 	ClearPaths: function() { this.linesToDraw = []; },
 	
 	//Setters
@@ -826,6 +869,35 @@ readTextFile("Scripts/HallwayCoordinates.json", function(text){
 	database["Halldata"] = data;
 });
 
+readTextFile("Scripts/DynMapCoords.json", function(text){
+	let data = JSON.parse(text);
+	database["DynMapCoords"] = data;
+	
+	
+	directionsData.mapsToDraw = {"FirstFloorAcademic" : { "Coords" : database.DynMapCoords["1MS"]["S1"], "Lines" : []}};
+	
+	
+	/*
+	directionsData.mapsToDraw = {
+		"FirstFloorAcademic" : { "Coords" : database.DynMapCoords["3M"]["S1"], "Lines" : []},
+		"FirstFloorActivity" : { "Coords" : database.DynMapCoords["3M"]["R1"], "Lines" : []},
+		"SecondFloorActivity" : { "Coords" : database.DynMapCoords["3M"]["R2"], "Lines" : []}
+	};
+	*/
+	
+	/*
+	directionsData.mapsToDraw = {
+		"FirstFloorAcademic" : { "Coords" : database.DynMapCoords["2MHetero"]["S1"], "Lines" : []},
+		"FirstFloorActivity" : { "Coords" : database.DynMapCoords["2MHetero"]["R1"], "Lines" : []}
+	};
+	*/
+	
+	/*
+	directionsData.mapsToDraw = {"FirstFloorActivity" : { "Coords" : database.DynMapCoords["1MR"]["R1"], "Lines" : []}};
+	*/
+	
+	});
+
 
 //When the page loads, do this:
 window.onload = function() {
@@ -833,23 +905,23 @@ window.onload = function() {
     var ctx = canvas.getContext("2d");
 	ctx.boxSizing = "border-box";
 	
-    var img = new Image;
-	img.src = 'Images/1stFloorMap.png'
+    let img1 = new Image;
+	img1.src = 'Images/1stFloorAcademic.png';
+	let img2 = new Image;
+	img2.src = 'Images/1stFloorActivity.png';
+	let img3 = new Image;
+	img3.src = 'Images/2ndFloorActivityFake.png';
 	
-    img.onload = function() {
-		ctx.imageSmoothingEnabled = false;
-	};
+	let mapImages = { "FirstFloorAcademic" : img1, "FirstFloorActivity" : img2, "SecondFloorActivity" : img3 }
+	
 	
 	window.setInterval(function() {
-			let imgOrigin = {
-				x: canvas.width / 2 - (canvas.width*MAP_SCALE) / 2,
-				y: canvas.height / 2 - (canvas.width*MAP_SCALE) / 2
-			}
-			ResizeCanvas("Map1Canvas", img, imgOrigin);
-			//ResizeCanvas("Map2Canvas", img, imgOrigin);
+			
+			directionsData.DrawMaps("Map1Canvas", mapImages);
+			
 			directionsData.lineOffset++;
 			if (directionsData.lineOffset > 14) { directionsData.lineOffset = 0; }
-			directionsData.DrawDirections("Map1Canvas", img, imgOrigin);
+			
 		},  /* Refresh rate in ms -> */ 100);
 }; 
 
