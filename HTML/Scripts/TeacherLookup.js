@@ -14,20 +14,21 @@ function readTextFile(file, callback) {
 
 
 //Displays info for users based on specified room number in HTML text boxes
-function DisplayInfoForDirections(FromTo){ //TODO Handle room numbers that have letters in them, and add band, gym, and library compatibility.
+function DisplayInfoForDirections(FromTo, index){ //TODO Handle room numbers that have letters in them, and add band, gym, and library compatibility.
+	//Get Period
 	let e = document.getElementById("ClassPeriod");
 	let period = e.options[e.selectedIndex].value;
-	let roomnumber = parseInt(document.getElementById(FromTo + "RoomNumber").value);
-	let index = GetRoomIndex(roomnumber, period, FromTo);
 	
-	if (index["errmsg"] != null) {
-		document.getElementById(FromTo + "ErrorLogContent").innerHTML = index["errmsg"];
-		document.getElementById(FromTo + "ErrorLogContent").style.display = "block";
+	
+	if (index != undefined) {
+		document.getElementById(FromTo + "ErrorLogContent").style.display = "none";
+		document.getElementById(FromTo + "RoomRNumber").innerHTML = "Room " + database.data[index][period];
+		document.getElementById(FromTo + "RoomTeacher").innerHTML = database.data[index]["Last Names"];
 	}
 	else {
 		document.getElementById(FromTo + "ErrorLogContent").style.display = "none";
-		document.getElementById(FromTo + "RoomRNumber").innerHTML = "Room " + database.data[index["iterator"]][period];
-		document.getElementById(FromTo + "RoomTeacher").innerHTML = database.data[index["iterator"]]["Last Names"];
+		document.getElementById(FromTo + "RoomRNumber").innerHTML = "Room " + document.getElementById(FromTo + "RoomNumber").value;
+		document.getElementById(FromTo + "RoomTeacher").innerHTML = "No teacher at specified period.";
 	}
 }
 
@@ -104,51 +105,84 @@ function GetPeriodInfoByIterator(iterator, period) {
 }
 
 
-//Returns the iterator for a specified room number, and returns an error message along with the iterator if something went wrong
-function GetRoomIndex(roomnumber, period, FromTo) {
-	let iterator = 0;
-	let DBRoomNumber = "";
-	let errmsg = null;
+//Verifies user input, then runs functions to display the correct HTML information
+function VerifyInput(FromTo) {
+	let e = document.getElementById("ClassPeriod");
+	let period = e.options[e.selectedIndex].value;
 	
-	if (isNaN(roomnumber)) {
-		errmsg =("Please enter a \"" + FromTo + "\" room number.");
-		return {
-			"iterator":iterator,
-			"errmsg":errmsg,
-		};
+	let roomnumber = directionsData.toRoom;
+	
+	if (FromTo == "From") {
+		roomnumber = directionsData.fromRoom;
 	}
 	
-	while (iterator < database.data.length - 1) {
-
-		DBRoomNumber = database.data[iterator][period]; //Set DBRoomNumber to the next .json index
-		if (DBRoomNumber == null) { iterator++; continue; } //If the room does not have a class at specified period, continue.
-		DBRoomNumber = DBRoomNumber.replace(/\D/g,''); //Remove the wing letter(s) from the resultant database value
+	if (roomnumber != undefined && roomnumber != "") {
+			
+		//Check if room is in the database
+		let BHasRoomBeenFound = false;
+		let iterator = 0;
+		let DBRoomNumber;
 		
-		if (DBRoomNumber == roomnumber) {
-			break;
+		//If the room is in the room database
+		if (roomnumber in database.RNdata["FirstFloorAcademic"] || roomnumber in database.RNdata["FirstFloorActivity"]) {
+			
+			//Try to locate the room in RNdata to get teacher name, etc.
+			while (iterator < database.data.length - 1 && !BHasRoomBeenFound) {
+				DBRoomNumber = database.data[iterator][period]; //Set DBRoomNumber to the next .json index
+				if (DBRoomNumber == null) { iterator++; continue; } //If the room does not have a class at specified period, continue.
+				
+				if (DBRoomNumber.includes(roomnumber)) {
+					//Iterator has been found, room is in database and has index: iterator
+					BHasRoomBeenFound = true;
+					//Run function to change fromRoom information
+					DisplayInfoForDirections(FromTo, iterator);
+					//Reset error box
+					document.getElementById(FromTo + "ErrorLogContent").innerHTML = "";
+				}
+				else { iterator++; }
+			}
+			//If the RNdata wasn't found, but room is valid
+			if (!BHasRoomBeenFound) {
+				//Run function to change fromRoom information, but without a teacher
+				DisplayInfoForDirections(FromTo);
+				//Reset error box
+					document.getElementById(FromTo + "ErrorLogContent").innerHTML = "";
+			}
 		}
-		else if (iterator == database.data.length - 2) { //Catches invalid room numbers (late catch for characters, NaN values, and decimals)
-			errmsg =("Invalid \"" + FromTo + "\" room number, or room " + roomnumber + " does not have a class at this period.\n");
-			break;
+		//The room is not in the database
+		else {
+			if (FromTo == "To") {
+				directionsData.toRoom = undefined;
+			}
+			else { directionsData.fromRoom = undefined; }
+			//Set error box
+			document.getElementById(FromTo + "ErrorLogContent").innerHTML = "Invalid \'" + FromTo + "\' room number (" + roomnumber + ")!";
 		}
-		else { iterator++; }
 	}
-	return {
-		"iterator":iterator,
-		"errmsg":errmsg,
-	};
+	else {
+		//Nothing was entered
+		if (FromTo == "To") {
+			directionsData.toRoom = undefined;
+		}
+		else { directionsData.fromRoom = undefined; }
+		document.getElementById(FromTo + "ErrorLogContent").innerHTML = "Enter a " + FromTo + " room.";
+	}
 }
 
 
 //Checks to see if GetRoomIndex returned an error message, and changes error box visibility respectively
 function CheckErrorBoxes(type) {
 	if (type == "Directions") {
-		if ( document.getElementById("ToErrorLogContent").style.display == "none" && document.getElementById("FromErrorLogContent").style.display == "none") {
+		if ( document.getElementById("ToErrorLogContent").innerHTML == "" && document.getElementById("FromErrorLogContent").innerHTML == "") {
 			document.getElementById("UserErrorLog").style.display = "none";
 		}
-		else { document.getElementById("UserErrorLog").style.display = "block"; }
+		else { 
+			document.getElementById("UserErrorLog").style.display = "block";
+			document.getElementById("ToErrorLogContent").style.display = "block";
+			document.getElementById("FromErrorLogContent").style.display = "block";
+		}
 		
-		if ( document.getElementById("ToErrorLogContent").style.display != "none" && document.getElementById("FromErrorLogContent").style.display != "none") {
+		if ( document.getElementById("ToErrorLogContent").innerHTML != "" && document.getElementById("FromErrorLogContent").innerHTML != "") {
 			document.getElementById("ErrorBreak").style.display = "block";
 		}
 		else { document.getElementById("ErrorBreak").style.display = "none"; }
@@ -321,14 +355,6 @@ function appendEnterHandlers(itemid) {
 }
 
 
-function DEBUGDrawAllLines() {
-	directionsData.ClearPaths();
-	for (var x of database.Halldata) {
-		directionsData.linesToDraw.push(x);
-	}
-}
-
-
 
 // --------------- Seperation Between function definitions exception definitions ----------------
 
@@ -337,13 +363,6 @@ Intersect404Error.prototype = new Error();
 
 
 // --------------- Seperation Between exception definitions and scripts ----------------
-
-
-//Constants Declarations
-	//Specifies the percent of the width of the canvas elements that the maps will take up. (0.01 < MAP_SCALE < 1.00)
-	const MAP_SCALE = 0.5;
-	
-//End of Constants Declarations
 
 
 //Initialize database that will hold .json data such as room numbers, teachers, and class periods.
@@ -367,12 +386,8 @@ var database = {
 var directionsData = {
 	toRoom:undefined,
 	fromRoom:undefined,
-	imgSize:undefined,
 	lineOffset : 0,
 	
-	//Will specify which lines are being drawn on the canvas,
-	//MUST be an object with attributes "X1", "X2", "Y1", "Y2" in percent coords
-	linesToDraw:[], 
 	
 	//Specifies which maps are to be drawn on canvas.
 	mapsToDraw:{},
@@ -384,13 +399,17 @@ var directionsData = {
 		this.fromRoom = document.getElementById("FromRoomNumber").value;
 		this.toRoom = document.getElementById("ToRoomNumber").value;
 		
-		//TODO fix these two functions to comprehend Band and Gyms
+		VerifyInput("To");
+		VerifyInput("From");
+		CheckErrorBoxes("Directions");
+		
+		/*
 		DisplayInfoForDirections('To');
 		DisplayInfoForDirections('From');
 		CheckErrorBoxes('Directions');
+		*/
 		
 		if (this.fromRoom != undefined && this.toRoom != undefined) {
-			
 			this.ClearPaths();
 			this.mapsToDraw = {};
 			//Check which maps are needed
@@ -408,10 +427,56 @@ var directionsData = {
 					this.AddNewPath(this.fromRoom, this.toRoom, "FirstFloorActivity");
 				}
 			}
-				//Additional if statements to find out if a third map is needed
-			
+			else {
+				let tempMaps = [];
+				tempMaps.push(this.getRoomMap(this.fromRoom));
+				tempMaps.push(this.getRoomMap(this.toRoom));
+				
+				if (tempMaps.indexOf("FirstFloorAcademic") > -1) {
+					
+					if (tempMaps.indexOf("SecondFloorAcademicFloorAcademic") > -1) {
+						this.mapsToDraw = {"FirstFloorAcademic" : { "Coords" : database.DynMapCoords["2MHomoS"]["S1"], "Lines" : []}, 
+						"SecondFloorAcademic" : { "Coords" : database.DynMapCoords["2MHomoS"]["S2"], "Lines" : []}};
+						//Then add path fromRoom to exit, exit to toRoom
+					}
+					else if (tempMaps.indexOf("FirstFloorActivity") > -1) {
+						this.mapsToDraw = {"FirstFloorAcademic" : { "Coords" : database.DynMapCoords["2MHetero"]["S1"], "Lines" : []}, 
+						"FirstFloorActivity" : { "Coords" : database.DynMapCoords["2MHetero"]["R1"], "Lines" : []}};
+						
+						if (this.getRoomMap(this.fromRoom) == "FirstFloorAcademic") {
+							this.AddNewPath(this.fromRoom, "ActivityExit", "FirstFloorAcademic");
+							this.AddNewPath("AcademicExit", this.toRoom, "FirstFloorActivity");
+						}
+						else {
+							this.AddNewPath(this.fromRoom, "AcademicExit", "FirstFloorActivity");
+							this.AddNewPath("ActivityExit", this.toRoom, "FirstFloorAcademic");
+						}
+					}
+				}
+				else if (tempMaps.indexOf("FirstFloorActivity") > -1) {
+					if (tempMaps.indexOf("SecondFloorActivityFloorActivity") > -1) {
+						this.mapsToDraw = {"FirstFloorActivity" : { "Coords" : database.DynMapCoords["2MHomoR"]["R1"], "Lines" : []}, 
+						"SecondFloorActivity" : { "Coords" : database.DynMapCoords["2MHomoR"]["R2"], "Lines" : []}};
+						//Then add path fromRoom to exit, exit to toRoom
+					}
+					else if (tempMaps.indexOf("FirstFloorAcademic") > -1) {
+						this.mapsToDraw = {"FirstFloorAcademic" : { "Coords" : database.DynMapCoords["2MHetero"]["S1"], "Lines" : []}, 
+						"FirstFloorActivity" : { "Coords" : database.DynMapCoords["2MHetero"]["R1"], "Lines" : []}};
+						
+						if (this.getRoomMap(this.fromRoom) == "FirstFloorAcademic") {
+							this.AddNewPath(this.fromRoom, "ActivityExit", "FirstFloorAcademic");
+							this.AddNewPath("AcademicExit", this.toRoom, "FirstFloorActivity");
+						}
+						else {
+							this.AddNewPath(this.fromRoom, "AcademicExit", "FirstFloorActivity");
+							this.AddNewPath("ActivityExit", this.toRoom, "FirstFloorAcademic");
+						}
+					}
+				}
+			}
 		}
 	},
+	
 	
 	getRoomMap : function(room) { //Returns the map that a specified room is on
 		if (room in database.RNdata["FirstFloorActivity"]) {
@@ -442,7 +507,7 @@ var directionsData = {
 		
 		
 		
-		//Create a line that has a length = 5% of imgSize in the direction of ExitDirection
+		//Create a line that has a length = 10% (arbitrary) of the image's size in the direction of ExitDirection
 		let intersectLine = undefined;
 		switch(roomObject["ExitDirection"]) {
 			case "Up":
@@ -471,12 +536,12 @@ var directionsData = {
 		//Loop to find which hallway line is being intersected and get intersection point
 		for (var i = 0; i < database.Halldata[map].length; i++) {
 			//For each hallway, set up this object, which holds coordinates in pixel measurements
-			let objectCoords = {"X1":undefined, "Y1":undefined, "X2":undefined, "Y2":undefined};
-			
-			objectCoords["X1"] = parseFloat(database.Halldata[map][i]["X1"])*this.mapsToDraw[map]["Coords"]["Width"];
-			objectCoords["Y1"] = parseFloat(database.Halldata[map][i]["Y1"])*this.mapsToDraw[map]["Coords"]["Height"];
-			objectCoords["X2"] = parseFloat(database.Halldata[map][i]["X2"])*this.mapsToDraw[map]["Coords"]["Width"];
-			objectCoords["Y2"] = parseFloat(database.Halldata[map][i]["Y2"])*this.mapsToDraw[map]["Coords"]["Height"];
+			let objectCoords = {
+				"X1" : parseFloat(database.Halldata[map][i]["X1"])*this.mapsToDraw[map]["Coords"]["Width"],
+				"Y1" : parseFloat(database.Halldata[map][i]["Y1"])*this.mapsToDraw[map]["Coords"]["Height"],
+				"X2" : parseFloat(database.Halldata[map][i]["X2"])*this.mapsToDraw[map]["Coords"]["Width"],
+				"Y2" : parseFloat(database.Halldata[map][i]["Y2"])*this.mapsToDraw[map]["Coords"]["Height"]
+			};
 			
 			//intersectPoint will be:
 			//If the line intersects: an object in the form of {"x": pixel coordinate, "y": pixel coordinate}
@@ -546,15 +611,15 @@ var directionsData = {
 	},
 	
 	
-	getShortestLine: function(pollLine, comparisonLine) {
+	getShortestLine: function(pollLine, comparisonLine, map) {
 		//Takes in two lines, pollLine and comparisonLine, and finds and returns the closest endpoint of the comparisonLine to the pollLine.
 		//Also returns distance.
 		//Endpoint: 1 means the closest endpoint is (X1, Y1). Endpoint: 2 means closest endpoint is (X2, Y2).
-		let dist1 = this.getDistance(pollLine["X1"]*this.imgSize, pollLine["Y1"]*this.imgSize, comparisonLine["X1"]*this.imgSize, comparisonLine["Y1"]*this.imgSize);
-		dist1 += this.getDistance(pollLine["X1"]*this.imgSize, pollLine["Y1"]*this.imgSize, comparisonLine["X2"]*this.imgSize, comparisonLine["Y2"]*this.imgSize);
+		let dist1 = this.getDistance(pollLine["X1"]*this.mapsToDraw[map]["Coords"]["Width"], pollLine["Y1"]*this.mapsToDraw[map]["Coords"]["Width"], comparisonLine["X1"]*this.mapsToDraw[map]["Coords"]["Width"], comparisonLine["Y1"]*this.mapsToDraw[map]["Coords"]["Width"]);
+		dist1 += this.getDistance(pollLine["X1"]*this.mapsToDraw[map]["Coords"]["Width"], pollLine["Y1"]*this.mapsToDraw[map]["Coords"]["Width"], comparisonLine["X2"]*this.mapsToDraw[map]["Coords"]["Width"], comparisonLine["Y2"]*this.mapsToDraw[map]["Coords"]["Width"]);
 		
-		let dist2 = this.getDistance(pollLine["X2"]*this.imgSize, pollLine["Y2"]*this.imgSize, comparisonLine["X1"]*this.imgSize, comparisonLine["Y1"]*this.imgSize);
-		dist2 += this.getDistance(pollLine["X2"]*this.imgSize, pollLine["Y2"]*this.imgSize, comparisonLine["X2"]*this.imgSize, comparisonLine["Y2"]*this.imgSize);
+		let dist2 = this.getDistance(pollLine["X2"]*this.mapsToDraw[map]["Coords"]["Width"], pollLine["Y2"]*this.mapsToDraw[map]["Coords"]["Width"], comparisonLine["X1"]*this.mapsToDraw[map]["Coords"]["Width"], comparisonLine["Y1"]*this.mapsToDraw[map]["Coords"]["Width"]);
+		dist2 += this.getDistance(pollLine["X2"]*this.mapsToDraw[map]["Coords"]["Width"], pollLine["Y2"]*this.mapsToDraw[map]["Coords"]["Width"], comparisonLine["X2"]*this.mapsToDraw[map]["Coords"]["Width"], comparisonLine["Y2"]*this.mapsToDraw[map]["Coords"]["Width"]);
 		
 		if (dist1 == dist2) {
 			return 0;
@@ -566,6 +631,7 @@ var directionsData = {
 			return 2;
 		}
 	},
+
 	
 	AddNewPath: function(roomA, roomB, map) {
 		let LineA;
@@ -592,7 +658,7 @@ var directionsData = {
 		//---- At this point, there should be two line segments drawn into the hallway, from room A and from room B.
 		
 		if (LineA["Hallway"] == LineB["Hallway"]) {
-			//Just draw a line to the two intersect points, add to directionsData["linesToDraw"]
+			//Just draw a line to the two intersect points, add to corresponding map's "Lines" attribute
 			LineA = {
 				"X1": LineA["X2"],
 				"Y1": LineA["Y2"],
@@ -608,7 +674,7 @@ var directionsData = {
 		//Else, Draw the LineA endpoint closest to PointB
 		else {
 			
-			let shortest = this.getShortestLine(database.Halldata[map][LineA["Hallway"]], database.Halldata[map][LineB["Hallway"]]);
+			let shortest = this.getShortestLine(database.Halldata[map][LineA["Hallway"]], database.Halldata[map][LineB["Hallway"]], map);
 			
 			if (shortest == 0) {
 				
@@ -673,7 +739,7 @@ var directionsData = {
 		let intersectHallways = [];
 		for (var c = 0; c < 10; c++) {
 			if (LineA["Hallway"] == LineB["Hallway"]) {
-				//Just draw a line to the two intersect points, add to directionsData["linesToDraw"]
+				//Just draw a line to the two intersect points, add to corresponding map's "Lines" attribute
 				LineA = {
 					"X1": LineA["X2"],
 					"Y1": LineA["Y2"],
@@ -708,7 +774,7 @@ var directionsData = {
 			if (intersectHallways.length == 1) {
 				
 				if (intersectHallways[0]["Hallway"] == LineB["Hallway"]) {
-					//Just draw a line to the two intersect points, add to directionsData["linesToDraw"]
+					//Just draw a line to the two intersect points, add to corresponding map's "Lines" attribute
 					LineA = {
 						"X1": intersectHallways[0]["X1"],
 						"Y1": intersectHallways[0]["Y1"],
@@ -762,7 +828,7 @@ var directionsData = {
 			LineA = intersectHallways[shortest["Hallway"]];
 			
 			if (LineA["Hallway"] == LineB["Hallway"]) {
-				//Just draw a line to the two intersect points, add to directionsData["linesToDraw"]
+				//Just draw a line to the two intersect points, add to corresponding map's "Lines" attribute
 				LineA = {
 					"X1": LineA["X1"],
 					"Y1": LineA["Y1"],
@@ -831,7 +897,11 @@ var directionsData = {
 	
 	
 	//TODO fix.
-	ClearPaths: function() { this.linesToDraw = []; },
+	ClearPaths: function() {
+		for (x in this.mapsToDraw) {
+			this.mapsToDraw[x]["Lines"] = [];
+		}
+	},
 	
 	//Setters
 	setToRoom: function(RN) { this.toRoom = RN; },
@@ -841,6 +911,7 @@ var directionsData = {
 		this.toRoom = document.getElementById("ToRoomNumber").value;
 	}
 }
+
 
 //Asynchronously read the database file then return the result to the database object.
 readTextFile("Scripts/ExtensionGrid.json", function(text){

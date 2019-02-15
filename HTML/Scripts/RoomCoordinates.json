@@ -1,5 +1,6 @@
 {
 	"FirstFloorAcademic" : {
+		"ActivityExit": {"RoomY":"0.5032467246055603","RoomX":"0.9090909361839294","ExitDirection":"Left"},
 		"118": {"RoomY":"0.399350643157959","RoomX":"0.801948070526123","ExitDirection":"Right"},
 		"119": {"RoomY":"0.37012988328933716","RoomX":"0.8051947951316833","ExitDirection":"Right"},
 		"117": {"RoomY":"0.41558441519737244","RoomX":"0.8863636255264282","ExitDirection":"Left"},
@@ -52,6 +53,7 @@
 		"Small Gym": {"RoomY":"0.44999998807907104","RoomX":"0.7133333086967468","ExitDirection":"Down"},
 		"154": {"RoomY":"0.8100000023841858","RoomX":"0.37555554509162903","ExitDirection":"Right"},
 		"Auditorium": {"RoomY":"0.6466666460037231","RoomX":"0.4444444477558136","ExitDirection":"Left"},
-		"Gym": {"RoomY":"0.3866666555404663","RoomX":"0.5111111402511597","ExitDirection":"Down"}
+		"Gym": {"RoomY":"0.3866666555404663","RoomX":"0.5111111402511597","ExitDirection":"Down"},
+		"AcademicExit": {"RoomY":"0.4300000071525574","RoomX":"0.05999999865889549","ExitDirection":"Down"}
 	}
 }
