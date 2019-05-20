@@ -46,14 +46,28 @@
 		"104": {"RoomY":"0.8084415793418884","RoomX":"0.41558441519737244","ExitDirection":"Right"},
 		"103": {"RoomY":"0.7824675440788269","RoomX":"0.41558441519737244","ExitDirection":"Right"},
 		"101": {"RoomY":"0.6266233921051025","RoomX":"0.41558441519737244","ExitDirection":"Right"},
-		"102": {"RoomY":"0.6558441519737244","RoomX":"0.41558441519737244","ExitDirection":"Right"}
+		"102": {"RoomY":"0.6558441519737244","RoomX":"0.41558441519737244","ExitDirection":"Right"},
+		"SW_Stair1": {"RoomY":"0.8831169009208679","RoomX":"0.13311688601970673","ExitDirection":"Up"},
+		"S_Stair1": {"RoomY":"0.9383116960525513","RoomX":"0.4707792103290558","ExitDirection":"Up"},
+		"W_Stair1": {"RoomY":"0.5129870176315308","RoomX":"0.18506494164466858","ExitDirection":"Right"},
+		"N_Stair1": {"RoomY":"0.10389610379934311","RoomX":"0.44480520486831665","ExitDirection":"Down"}
+	},
+	"SecondFloorAcademic" : {
+		"218": {"RoomY":"0.399350643157959","RoomX":"0.8246753215789795","ExitDirection":"Right"}
+	
 	},
 	"FirstFloorActivity" : {
 		"Band": {"RoomY":"0.4399999976158142","RoomX":"0.8755555748939514","ExitDirection":"Down"},
 		"Small Gym": {"RoomY":"0.44999998807907104","RoomX":"0.7133333086967468","ExitDirection":"Down"},
-		"154": {"RoomY":"0.8100000023841858","RoomX":"0.37555554509162903","ExitDirection":"Right"},
+		"Conf": {"RoomY":"0.8100000023841858","RoomX":"0.37555554509162903","ExitDirection":"Right"},
 		"Auditorium": {"RoomY":"0.6466666460037231","RoomX":"0.4444444477558136","ExitDirection":"Left"},
 		"Gym": {"RoomY":"0.3866666555404663","RoomX":"0.5111111402511597","ExitDirection":"Down"},
 		"AcademicExit": {"RoomY":"0.4300000071525574","RoomX":"0.05999999865889549","ExitDirection":"Down"}
+	},
+	"SecondFloorActivity" : {
+	
+	
+	
+	
 	}
 }

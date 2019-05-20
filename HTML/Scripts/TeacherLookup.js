@@ -22,12 +22,12 @@ function DisplayInfoForDirections(FromTo, index){ //TODO Handle room numbers tha
 	
 	if (index != undefined) {
 		document.getElementById(FromTo + "ErrorLogContent").style.display = "none";
-		document.getElementById(FromTo + "RoomRNumber").innerHTML = "Room " + database.data[index][period];
+		document.getElementById(FromTo + "RoomRNumber").innerHTML = "Room: " + database.data[index][period];
 		document.getElementById(FromTo + "RoomTeacher").innerHTML = database.data[index]["Last Names"];
 	}
 	else {
 		document.getElementById(FromTo + "ErrorLogContent").style.display = "none";
-		document.getElementById(FromTo + "RoomRNumber").innerHTML = "Room " + document.getElementById(FromTo + "RoomNumber").value;
+		document.getElementById(FromTo + "RoomRNumber").innerHTML = "Room: " + document.getElementById(FromTo + "RoomNumber").value;
 		document.getElementById(FromTo + "RoomTeacher").innerHTML = "No teacher at specified period.";
 	}
 }
@@ -146,7 +146,7 @@ function VerifyInput(FromTo) {
 				//Run function to change fromRoom information, but without a teacher
 				DisplayInfoForDirections(FromTo);
 				//Reset error box
-					document.getElementById(FromTo + "ErrorLogContent").innerHTML = "";
+				document.getElementById(FromTo + "ErrorLogContent").innerHTML = "";
 			}
 		}
 		//The room is not in the database
@@ -395,7 +395,6 @@ var directionsData = {
 	
 	StartPathfinding : function() { //Initiates directions pathfinding, requires input in the directions text boxes
 		//First, get the values from the input boxes.
-		//TODO: Validate that input is a valid number or room name
 		this.fromRoom = document.getElementById("FromRoomNumber").value;
 		this.toRoom = document.getElementById("ToRoomNumber").value;
 		
@@ -403,42 +402,71 @@ var directionsData = {
 		VerifyInput("From");
 		CheckErrorBoxes("Directions");
 		
-		/*
-		DisplayInfoForDirections('To');
-		DisplayInfoForDirections('From');
-		CheckErrorBoxes('Directions');
-		*/
 		
 		if (this.fromRoom != undefined && this.toRoom != undefined) {
 			this.ClearPaths();
 			this.mapsToDraw = {};
+			
 			//Check which maps are needed
 			
+			//If the rooms are on the same map
 			if (this.getRoomMap(this.toRoom) == this.getRoomMap(this.fromRoom)) {
-				//Make this a switch statement?
 				
-				if (this.getRoomMap(this.fromRoom) == "FirstFloorAcademic") {
-					this.mapsToDraw = {"FirstFloorAcademic" : { "Coords" : database.DynMapCoords["1MS"]["S1"], "Lines" : []}};
-					this.AddNewPath(this.fromRoom, this.toRoom, "FirstFloorAcademic");
+				switch (this.getRoomMap(this.fromRoom)) {
+					case "FirstFloorAcademic":
+						this.mapsToDraw = {"FirstFloorAcademic" : { "Coords" : database.DynMapCoords["1MS"]["S1"], "Lines" : []}};
+						this.AddNewPath(this.fromRoom, this.toRoom, "FirstFloorAcademic");
+					break;
 					
-				}
-				else if (this.getRoomMap(this.fromRoom) == "FirstFloorActivity") {
-					this.mapsToDraw = {"FirstFloorActivity" : { "Coords" : database.DynMapCoords["1MR"]["R1"], "Lines" : []}};
-					this.AddNewPath(this.fromRoom, this.toRoom, "FirstFloorActivity");
+					case "FirstFloorActivity":
+						this.mapsToDraw = {"FirstFloorActivity" : { "Coords" : database.DynMapCoords["1MR"]["R1"], "Lines" : []}};
+						this.AddNewPath(this.fromRoom, this.toRoom, "FirstFloorActivity");
+					break;
+					
+					case "SecondFloorAcademic":
+						this.mapsToDraw = {"SecondFloorAcademic" : { "Coords" : database.DynMapCoords["1MS"]["S1"], "Lines" : []}};
+						this.AddNewPath(this.fromRoom, this.toRoom, "SecondFloorAcademic");
+					break;
+					
+					case "SecondFloorActivity":
+						this.mapsToDraw = {"SecondFloorActivity" : { "Coords" : database.DynMapCoords["1MR"]["R1"], "Lines" : []}};
+						this.AddNewPath(this.fromRoom, this.toRoom, "SecondFloorActivity");
+					break;
 				}
 			}
+			
+			//If the rooms are not on the same map
 			else {
 				let tempMaps = [];
 				tempMaps.push(this.getRoomMap(this.fromRoom));
 				tempMaps.push(this.getRoomMap(this.toRoom));
 				
+				//If FirstFloorAcademic is in tempMaps
 				if (tempMaps.indexOf("FirstFloorAcademic") > -1) {
 					
-					if (tempMaps.indexOf("SecondFloorAcademicFloorAcademic") > -1) {
+					//If SecondFloorAcademic is in tempMaps
+					if (tempMaps.indexOf("SecondFloorAcademic") > -1) {
 						this.mapsToDraw = {"FirstFloorAcademic" : { "Coords" : database.DynMapCoords["2MHomoS"]["S1"], "Lines" : []}, 
 						"SecondFloorAcademic" : { "Coords" : database.DynMapCoords["2MHomoS"]["S2"], "Lines" : []}};
-						//Then add path fromRoom to exit, exit to toRoom
+						
+						
+						//Draw imaginary line from fromRoom to toRoom
+						//Get midpoint of line
+						//roomObject = database.RNdata[map][room];
+						let midpoint;
+						if (this.getRoomMap(this.fromRoom) == "FirstFloorAcademic") {
+							midpoint = parseFloat(database.RNdata["FirstFloorAcademic"][this.fromRoom]["RoomX"])
+							//START HERE
+							
+						}
+						
+						//Get the distance of all staircases (including the one just inside AcademicWing) to the midpoint
+							//Get the shortest distance
+							//Add new path from fromRoom to nearest staircase
+							//Add new path from nearest staircase (now on 2nd floor) to toRoom
 					}
+					
+					//If FirstFloorActivity is in tempMaps
 					else if (tempMaps.indexOf("FirstFloorActivity") > -1) {
 						this.mapsToDraw = {"FirstFloorAcademic" : { "Coords" : database.DynMapCoords["2MHetero"]["S1"], "Lines" : []}, 
 						"FirstFloorActivity" : { "Coords" : database.DynMapCoords["2MHetero"]["R1"], "Lines" : []}};
@@ -452,13 +480,33 @@ var directionsData = {
 							this.AddNewPath("ActivityExit", this.toRoom, "FirstFloorAcademic");
 						}
 					}
+					
+					//If SecondFloorActivity is in tempMaps
+					else if (tempMaps.indexOf("SecondFloorActivity") > -1) {
+						//We need 3 maps here. glhf.
+						
+					}
 				}
+				
+				//If FirstFloorActivity is in tempMaps
 				else if (tempMaps.indexOf("FirstFloorActivity") > -1) {
-					if (tempMaps.indexOf("SecondFloorActivityFloorActivity") > -1) {
+					
+					//If SecondFloorActivity is in tempMaps
+					if (tempMaps.indexOf("SecondFloorActivity") > -1) {
 						this.mapsToDraw = {"FirstFloorActivity" : { "Coords" : database.DynMapCoords["2MHomoR"]["R1"], "Lines" : []}, 
 						"SecondFloorActivity" : { "Coords" : database.DynMapCoords["2MHomoR"]["R2"], "Lines" : []}};
 						//Then add path fromRoom to exit, exit to toRoom
+						
+						//Draw imaginary line from fromRoom to toRoom
+						//Get midpoint of line
+						
+						//Get the distance of all staircases (including the one just inside AcademicWing) to the midpoint
+							//Get the shortest distance
+							//Add new path from fromRoom to nearest staircase
+							//Add new path from nearest staircase (now on 2nd floor) to toRoom
 					}
+					
+					//If FirstFloorAcademic is in tempMaps
 					else if (tempMaps.indexOf("FirstFloorAcademic") > -1) {
 						this.mapsToDraw = {"FirstFloorAcademic" : { "Coords" : database.DynMapCoords["2MHetero"]["S1"], "Lines" : []}, 
 						"FirstFloorActivity" : { "Coords" : database.DynMapCoords["2MHetero"]["R1"], "Lines" : []}};
@@ -471,6 +519,27 @@ var directionsData = {
 							this.AddNewPath(this.fromRoom, "AcademicExit", "FirstFloorActivity");
 							this.AddNewPath("ActivityExit", this.toRoom, "FirstFloorAcademic");
 						}
+					}
+					
+					//If SecondFloorAcademic is in tempMaps
+					else if (tempMaps.indexOf("SecondFloorAcademic")) {
+						//We need 3 maps here. glhf.
+						
+					}
+				}
+				
+				//If it gets to this point, both rooms are on the second floor, in different wings.
+				else {
+					this.mapsToDraw = {"SecondFloorAcademic" : { "Coords" : database.DynMapCoords["2MHetero"]["S1"], "Lines" : []}, 
+					"SecondFloorActivity" : { "Coords" : database.DynMapCoords["2MHetero"]["R1"], "Lines" : []}};
+					
+					if (this.getRoomMap(this.fromRoom) == "SecondFloorAcademic") {
+						this.AddNewPath(this.fromRoom, "ActivityExit", "SecondFloorAcademic");
+						this.AddNewPath("AcademicExit", this.toRoom, "SecondFloorActivity");
+					}
+					else {
+						this.AddNewPath(this.fromRoom, "AcademicExit", "SecondFloorActivity");
+						this.AddNewPath("ActivityExit", this.toRoom, "SecondFloorAcademic");
 					}
 				}
 			}
@@ -918,16 +987,7 @@ readTextFile("Scripts/ExtensionGrid.json", function(text){
 	let data = JSON.parse(text);
 	database["data"] = data;
 	database.FillTeacherNames();
-	AddAutocomplete(document.getElementById("TeacherLookupInput"), database.teachernames);
 	
-	//Assign event handlers to each Text Input Box to submit inputs on an ENTER keypress
-	//This section should be moved to the window.onload function
-	let InputBoxList = document.getElementsByClassName("TextInputBox");
-
-	appendEnterHandlers(InputBoxList.ToRoomNumber.id);
-	appendEnterHandlers(InputBoxList.FromRoomNumber.id);
-	appendEnterHandlers(InputBoxList.TeacherLookupInput.id);
-	appendEnterHandlers(InputBoxList.RoomLookupInput.id);
 }); 
 
 readTextFile("Scripts/RoomCoordinates.json", function(text){
@@ -944,9 +1004,29 @@ readTextFile("Scripts/DynMapCoords.json", function(text){
 	let data = JSON.parse(text);
 	database["DynMapCoords"] = data;
 	
+	});
+
+
+//When the page loads, do this:
+window.onload = function() {
+    var canvas = document.getElementById("Map1Canvas");
+    var ctx = canvas.getContext("2d");
+	ctx.boxSizing = "border-box";
 	
+	//Initialize map images
+    let img1 = new Image;
+	img1.src = 'Images/1stFloorAcademic.png';
+	let img2 = new Image;
+	img2.src = 'Images/1stFloorActivity.png';
+	let img3 = new Image;
+	img3.src = 'Images/2ndFloorActivityFake.png';
+	let img4 = new Image;
+	img4.src = 'Images/2ndFloorAcademic.png';
+	
+	let mapImages = { "FirstFloorAcademic" : img1, "FirstFloorActivity" : img2, "SecondFloorActivity" : img3, "SecondFloorAcademic" : img4 };
+	
+	//Draw the first map that displays
 	directionsData.mapsToDraw = {"FirstFloorAcademic" : { "Coords" : database.DynMapCoords["1MS"]["S1"], "Lines" : []}};
-	
 	
 	/*
 	directionsData.mapsToDraw = {
@@ -967,32 +1047,24 @@ readTextFile("Scripts/DynMapCoords.json", function(text){
 	directionsData.mapsToDraw = {"FirstFloorActivity" : { "Coords" : database.DynMapCoords["1MR"]["R1"], "Lines" : []}};
 	*/
 	
-	});
-
-
-//When the page loads, do this:
-window.onload = function() {
-    var canvas = document.getElementById("Map1Canvas");
-    var ctx = canvas.getContext("2d");
-	ctx.boxSizing = "border-box";
+	AddAutocomplete(document.getElementById("TeacherLookupInput"), database.teachernames);
 	
-    let img1 = new Image;
-	img1.src = 'Images/1stFloorAcademic.png';
-	let img2 = new Image;
-	img2.src = 'Images/1stFloorActivity.png';
-	let img3 = new Image;
-	img3.src = 'Images/2ndFloorActivityFake.png';
-	
-	let mapImages = { "FirstFloorAcademic" : img1, "FirstFloorActivity" : img2, "SecondFloorActivity" : img3 }
+	//Assign event handlers to each Text Input Box to submit inputs on an ENTER keypress
+	//TODO: fix appendEnterHandlers to work for each item in InputBoxList, without needing explicit calling for each item
+	let InputBoxList = document.getElementsByClassName("TextInputBox");
+
+	appendEnterHandlers(InputBoxList.ToRoomNumber.id);
+	appendEnterHandlers(InputBoxList.FromRoomNumber.id);
+	appendEnterHandlers(InputBoxList.TeacherLookupInput.id);
+	appendEnterHandlers(InputBoxList.RoomLookupInput.id);
 	
 	
 	window.setInterval(function() {
-			
-			directionsData.DrawMaps("Map1Canvas", mapImages);
-			
-			directionsData.lineOffset++;
-			if (directionsData.lineOffset > 14) { directionsData.lineOffset = 0; }
-			
-		},  /* Refresh rate in ms -> */ 100);
+		directionsData.DrawMaps("Map1Canvas", mapImages);
+		
+		directionsData.lineOffset++;
+		if (directionsData.lineOffset > 14) { directionsData.lineOffset = 0; }
+		
+	},  /* Refresh rate in ms -> */ 100);
 }; 
 
